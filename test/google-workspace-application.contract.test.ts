@@ -1,10 +1,12 @@
-import { expect, test } from "vitest";
+import { expect, expectTypeOf, test } from "vitest";
 import {
   GOOGLE_WORKSPACE_APPLICATION_FACE,
   GOOGLE_WORKSPACE_APPLICATION_CARD,
+  GOOGLE_WORKSPACE_APPLICATION_ID,
   GOOGLE_WORKSPACE_AUTH_REQUIREMENTS,
   GOOGLE_WORKSPACE_MEMBER_INDEX,
   GOOGLE_WORKSPACE_REQUESTS,
+  type GoogleWorkspaceNamespace,
 } from "@rook/google-workspace";
 
 test("exports one ready Google application whose requests and members agree", () => {
@@ -15,6 +17,10 @@ test("exports one ready Google application whose requests and members agree", ()
     summary:
       "Drive, Gmail, Calendar, Docs, Sheets, Slides, Chat, and People with native Drive transfers.",
   });
+  expect(GOOGLE_WORKSPACE_APPLICATION_ID).toBe(GOOGLE_WORKSPACE_APPLICATION_CARD.id);
+  expectTypeOf<
+    ApplicationsNamespace[typeof GOOGLE_WORKSPACE_APPLICATION_ID]
+  >().toEqualTypeOf<GoogleWorkspaceNamespace>();
   expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.binding).toBe("google-workspace");
   expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.origins).toEqual(["https://www.googleapis.com/"]);
   expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.scopes).toContain(

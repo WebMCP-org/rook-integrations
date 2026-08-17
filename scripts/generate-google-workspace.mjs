@@ -3,7 +3,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const applicationPath = 'ctx.applications["google-workspace"]';
+const applicationId = "google-workspace";
+const applicationPath = `ctx.applications[${JSON.stringify(applicationId)}]`;
 const header = `// Generated from the checked-in Google Discovery documents. Do not edit.
 // Regenerate with: vp run generate
 
@@ -35,7 +36,9 @@ const documents = await Promise.all(
 );
 
 const outputs = Object.entries({
-  "google-workspace.generated.ts": `${header}${documents.map(([name, document]) => types(name, document)).join("\n")}
+  "google-workspace.generated.ts": `${header}export const GOOGLE_WORKSPACE_APPLICATION_ID = ${JSON.stringify(applicationId)};
+
+${documents.map(([name, document]) => types(name, document)).join("\n")}
 ${workspaceType(documents)}
 `,
   "google-workspace.members.generated.ts": `${header}${memberIndex(documents)}\n`,
@@ -183,7 +186,13 @@ export type GoogleWorkspaceNamespace = {
   /** Request the employee's Google Workspace grant from Chrome Identity. */
   authorize(): Promise<{ authorized: true }>;
 ${factories}
-};`;
+};
+
+declare global {
+  interface ApplicationsNamespace {
+    ${JSON.stringify(applicationId)}: GoogleWorkspaceNamespace;
+  }
+}`;
 }
 
 function runtimeCatalog(documents) {

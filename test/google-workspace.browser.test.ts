@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { installGoogleWorkspace } from "@rook/google-workspace";
+import {
+  type GoogleWorkspaceFiles,
+  type GoogleWorkspaceTransport,
+  installGoogleWorkspace,
+} from "@rook/google-workspace";
 import {
   GOOGLE_WORKSPACE_TEST_BOUNDARY,
   GOOGLE_WORKSPACE_TEST_AUTHORIZATION,
@@ -46,7 +50,7 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       init,
     );
   };
-  const google: Parameters<typeof installGoogleWorkspace>[1] = {
+  const google: GoogleWorkspaceTransport = {
     async __invalidateToken(token) {
       invalidated.push(token);
     },
@@ -54,7 +58,7 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       return { ok: true, token: GOOGLE_WORKSPACE_TEST_TOKEN };
     },
   };
-  const workspace: Parameters<typeof installGoogleWorkspace>[2] = {
+  const workspace: GoogleWorkspaceFiles = {
     async writeStream({ path, stream, expectedSha256 }) {
       sawNativeDownloadStream = stream instanceof ReadableStream;
       const reader = stream.getReader();

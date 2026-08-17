@@ -40,3 +40,23 @@ vp run check
 The test runs the production client in real headless Chromium against a local
 HTTP boundary and proves native `File`, `Blob`, `ReadableStream`, 2.1 MB Drive
 transfer, hashing, cancellation, and atomic workspace publication behavior.
+
+## Develop with Rook locally
+
+Build after each package change, then temporarily link this checkout into the
+sibling Rook extension package:
+
+```bash
+vp run build
+vp exec -- pnpm --dir ../think-browser-host/packages/extension link ../../../rook-integrations
+```
+
+Remove the local link when verification is complete; `pnpm unlink` reinstalls
+the immutable commit already saved by Rook:
+
+```bash
+vp exec -- pnpm --dir ../think-browser-host/packages/extension unlink @rook/google-workspace
+```
+
+Never land the link as integration state. The final Rook change pins the
+reviewed `rook-integrations` commit in its package manifest and lockfile.

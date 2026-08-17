@@ -1,5 +1,8 @@
 import type { CuratedApplicationFace } from "./application-face";
-import type { GoogleWorkspaceNamespace } from "./google-workspace.generated";
+import {
+  GOOGLE_WORKSPACE_APPLICATION_ID,
+  type GoogleWorkspaceNamespace,
+} from "./google-workspace.generated";
 import { GOOGLE_WORKSPACE_MEMBER_INDEX } from "./google-workspace.members.generated";
 import { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
 
@@ -21,13 +24,13 @@ export type {
   GoogleSlides,
   GoogleWorkspaceNamespace,
 } from "./google-workspace.generated";
+export { GOOGLE_WORKSPACE_APPLICATION_ID };
 export {
   GOOGLE_WORKSPACE_MEMBER_INDEX,
   type GoogleWorkspaceMember,
 } from "./google-workspace.members.generated";
 export { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
 
-const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
 const RESPONSE_ERROR_LIMIT_BYTES = 64 * 1024;
 
 export const GOOGLE_WORKSPACE_APPLICATION_CARD = {
@@ -60,16 +63,16 @@ export const GOOGLE_WORKSPACE_APPLICATION_FACE = {
   relatedSkills: GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.skillNames,
 } as const satisfies CuratedApplicationFace;
 
-type GoogleWorkspaceHost = {
+export type GoogleWorkspaceAuthorization =
+  | { ok: true; token: string }
+  | { ok: false; error: { kind: "authentication_required" } };
+
+export type GoogleWorkspaceTransport = {
   __invalidateToken(token: string): Promise<void>;
-  __token(
-    interactive: boolean,
-  ): Promise<
-    { ok: true; token: string } | { ok: false; error: { kind: "authentication_required" } }
-  >;
+  __token(interactive: boolean): Promise<GoogleWorkspaceAuthorization>;
 };
 
-type GoogleWorkspaceFiles = {
+export type GoogleWorkspaceFiles = {
   writeStream(input: {
     expectedSha256?: string;
     path: string;
@@ -105,7 +108,7 @@ type GoogleWorkspaceServices = Readonly<Record<string, GoogleServiceDescription>
 
 export function installGoogleWorkspace(
   target: Record<string, unknown>,
-  transport: GoogleWorkspaceHost,
+  transport: GoogleWorkspaceTransport,
   workspace: GoogleWorkspaceFiles,
   services: GoogleWorkspaceServices = GOOGLE_WORKSPACE_REQUESTS,
 ): GoogleWorkspaceNamespace {

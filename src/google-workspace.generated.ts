@@ -1,6 +1,8 @@
 // Generated from the checked-in Google Discovery documents. Do not edit.
 // Regenerate with: vp run generate
 
+export const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
+
 export namespace GoogleDrive {
   /** Information about the user, the user's Drive, and system capabilities. */
   export type About = {
@@ -17502,3 +17504,9 @@ export type GoogleWorkspaceNamespace = {
   chat(): GoogleChat.Client;
   people(): GooglePeople.Client;
 };
+
+declare global {
+  interface ApplicationsNamespace {
+    "google-workspace": GoogleWorkspaceNamespace;
+  }
+}
