@@ -1,9 +1,50 @@
-import {
-  GOOGLE_WORKSPACE_SERVICES,
-  type GoogleWorkspaceNamespace,
-} from "./google-workspace.generated";
+import type { GoogleWorkspaceNamespace } from "./google-workspace.generated";
+import { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
 
-export * from "./google-workspace.generated";
+export type {
+  DriveDownloadInput,
+  DriveUploadInput,
+  GoogleCalendar,
+  GoogleChat,
+  GoogleDocs,
+  GoogleDrive,
+  GoogleGmail,
+  GooglePeople,
+  GoogleSheets,
+  GoogleSlides,
+  GoogleWorkspaceNamespace,
+} from "./google-workspace.generated";
+export {
+  GOOGLE_WORKSPACE_MEMBER_INDEX,
+  type GoogleWorkspaceMember,
+} from "./google-workspace.members.generated";
+export { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
+
+const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
+
+export const GOOGLE_WORKSPACE_APPLICATION_CARD = {
+  availability: "ready",
+  id: GOOGLE_WORKSPACE_APPLICATION_ID,
+  name: "Google Workspace",
+  summary:
+    "Drive, Gmail, Calendar, Docs, Sheets, Slides, Chat, and People with native Drive transfers.",
+} as const;
+
+export const GOOGLE_WORKSPACE_AUTH_REQUIREMENTS = {
+  binding: GOOGLE_WORKSPACE_APPLICATION_CARD.id,
+  origins: ["https://www.googleapis.com/"],
+  scopes: [
+    "https://mail.google.com/",
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/chat.messages",
+    "https://www.googleapis.com/auth/chat.spaces",
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/contacts.readonly",
+    "https://www.googleapis.com/auth/directory.readonly",
+    "https://www.googleapis.com/auth/userinfo.profile",
+  ],
+  skillNames: [GOOGLE_WORKSPACE_APPLICATION_CARD.id],
+} as const;
 
 type GoogleWorkspaceHost = {
   __invalidateToken(token: string): Promise<void>;
@@ -52,7 +93,7 @@ export function installGoogleWorkspace(
   target: Record<string, unknown>,
   transport: GoogleWorkspaceHost,
   workspace: GoogleWorkspaceFiles,
-  services: GoogleWorkspaceServices = GOOGLE_WORKSPACE_SERVICES,
+  services: GoogleWorkspaceServices = GOOGLE_WORKSPACE_REQUESTS,
 ): GoogleWorkspaceNamespace {
   const NativeBlob = Blob;
   const NativeFile = File;
@@ -73,7 +114,7 @@ export function installGoogleWorkspace(
         .then((authorization) => {
           if (!authorization.ok) {
             throw new Error(
-              "Google Workspace authentication is required; call await ctx.google.authorize()",
+              `Google Workspace authentication is required; call await ctx.applications["${GOOGLE_WORKSPACE_APPLICATION_ID}"].authorize()`,
             );
           }
           return authorization.token;
@@ -110,7 +151,7 @@ export function installGoogleWorkspace(
     return text || response.statusText || `Google Workspace request failed (${response.status})`;
   };
 
-  const authenticatedFetch = async (url: string, init: RequestInit = {}) => {
+  const authenticatedFetch = async (url: string, init: RequestInit) => {
     const authorization = await accessToken(false);
     const headers = new NativeHeaders(init.headers);
     headers.set("authorization", `Bearer ${authorization}`);
@@ -169,19 +210,15 @@ export function installGoogleWorkspace(
     service: GoogleServiceDescription,
     method: GoogleMethodDescription,
     input: Record<string, unknown>,
-    options: { body?: BodyInit; path?: string } = {},
   ) => {
     const body =
-      options.body ??
-      (method.request && input.requestBody !== undefined
+      method.request && input.requestBody !== undefined
         ? nativeJsonStringify(input.requestBody)
-        : undefined);
-    return await authenticatedFetch(requestUrl(service, method, input, options.path), {
+        : undefined;
+    return await authenticatedFetch(requestUrl(service, method, input), {
+      body,
+      headers: body === undefined ? undefined : { "content-type": "application/json" },
       method: method.httpMethod,
-      ...(body === undefined ? {} : { body }),
-      ...(options.body === undefined && body !== undefined
-        ? { headers: { "content-type": "application/json" } }
-        : {}),
     });
   };
 
@@ -223,8 +260,7 @@ export function installGoogleWorkspace(
 
   const driveService = services.drive;
   const drive = buildResource(driveService, driveService.resources);
-  const driveFiles = buildResource(driveService, driveService.resources.resources.files);
-  drive.files = driveFiles;
+  const driveFiles = drive.files as Record<string, unknown>;
   namespace.drive = () => drive;
   const createFile = driveService.resources.resources.files.methods.create;
   const getFile = driveService.resources.resources.files.methods.get;
@@ -235,6 +271,7 @@ export function installGoogleWorkspace(
     }
     const boundary = `rook-${crypto.randomUUID()}`;
     const requestBody = requestInput.requestBody ?? { name: file.name };
+    requestInput.fields ??= "id,name,mimeType,size,sha256Checksum";
     const body = new NativeBlob([
       `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
       nativeJsonStringify(requestBody),
@@ -243,15 +280,7 @@ export function installGoogleWorkspace(
       `\r\n--${boundary}--\r\n`,
     ]);
     const response = await authenticatedFetch(
-      requestUrl(
-        driveService,
-        createFile,
-        {
-          ...requestInput,
-          fields: requestInput.fields ?? "id,name,mimeType,size,sha256Checksum",
-        },
-        createFile.uploadPath,
-      ),
+      requestUrl(driveService, createFile, requestInput, createFile.uploadPath),
       {
         body,
         headers: { "content-type": `multipart/related; boundary=${boundary}` },

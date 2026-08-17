@@ -25,7 +25,9 @@
     "check": "vp check && vp run typecheck && vp run test",
     "check:generated": "node scripts/generate-google-workspace.mjs --check",
     "generate": "node scripts/generate-google-workspace.mjs",
-    "test": "vp exec vitest run --config vitest.browser.config.ts",
+    "test": "vp run test:contract && vp run test:browser",
+    "test:browser": "vp exec vitest run --config vitest.browser.config.ts",
+    "test:contract": "vp exec vitest run test/google-workspace-application.contract.test.ts",
     "typecheck": "vp run check:generated && vp exec tsc --noEmit"
   },
   "devDependencies": {

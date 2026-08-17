@@ -12,7 +12,11 @@ documents, plus native Drive upload and streamed workspace download helpers.
 ## Use from Rook
 
 ```ts
-import { installGoogleWorkspace } from "@rook/google-workspace";
+import {
+  GOOGLE_WORKSPACE_APPLICATION_CARD,
+  GOOGLE_WORKSPACE_MEMBER_INDEX,
+  installGoogleWorkspace,
+} from "@rook/google-workspace";
 ```
 
 Rook pins this repository by commit, so a provider change and its browser proof

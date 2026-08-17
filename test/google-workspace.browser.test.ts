@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { installGoogleWorkspace, type GoogleWorkspaceNamespace } from "../src/google-workspace";
+import { installGoogleWorkspace } from "../src/google-workspace";
 import {
   GOOGLE_WORKSPACE_TEST_BOUNDARY,
   GOOGLE_WORKSPACE_TEST_AUTHORIZATION,
+  GOOGLE_WORKSPACE_TEST_FILE_BYTES,
   GOOGLE_WORKSPACE_TEST_FILE_ID,
   GOOGLE_WORKSPACE_TEST_FILE_SHA256,
-  GOOGLE_WORKSPACE_TEST_FILE_SIZE,
+  GOOGLE_WORKSPACE_TEST_TOKEN,
   googleWorkspaceBoundaryProofSchema,
   googleWorkspaceDriveUploadReceiptSchema,
 } from "./google-workspace-fixture";
@@ -50,7 +51,7 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       invalidated.push(token);
     },
     async __token() {
-      return { ok: true, token: "browser-google-token" };
+      return { ok: true, token: GOOGLE_WORKSPACE_TEST_TOKEN };
     },
   };
   const workspace: Parameters<typeof installGoogleWorkspace>[2] = {
@@ -80,13 +81,13 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
     },
   };
 
-  const client: GoogleWorkspaceNamespace = installGoogleWorkspace({}, google, workspace);
+  const client = installGoogleWorkspace({}, google, workspace);
   expect(client).not.toHaveProperty("__token");
   expect(client).not.toHaveProperty("__invalidateToken");
   const drive = client.drive();
-  const bytes = new Uint8Array(GOOGLE_WORKSPACE_TEST_FILE_SIZE);
-  for (let index = 0; index < bytes.length; index += 1) bytes[index] = index % 251;
-  const file = new File([bytes], "regression.bin", { type: "application/octet-stream" });
+  const file = new File([GOOGLE_WORKSPACE_TEST_FILE_BYTES], "regression.bin", {
+    type: "application/octet-stream",
+  });
   const uploaded = googleWorkspaceDriveUploadReceiptSchema.parse(
     await drive.files.upload({ file }),
   );
@@ -109,19 +110,19 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
     mimeType: "application/octet-stream",
     name: "regression.bin",
     sha256Checksum: GOOGLE_WORKSPACE_TEST_FILE_SHA256,
-    size: String(GOOGLE_WORKSPACE_TEST_FILE_SIZE),
+    size: String(GOOGLE_WORKSPACE_TEST_FILE_BYTES.byteLength),
   });
   expect(receipt).toEqual({
     path: "/downloads/regression.bin",
     sha256: GOOGLE_WORKSPACE_TEST_FILE_SHA256,
-    size: GOOGLE_WORKSPACE_TEST_FILE_SIZE,
+    size: GOOGLE_WORKSPACE_TEST_FILE_BYTES.byteLength,
   });
   const downloadedBytes = downloaded.get(receipt.path);
   expect(downloadedBytes).toBeInstanceOf(Uint8Array);
   if (!downloadedBytes) throw new Error("Downloaded workspace bytes are missing");
   expect(await sha256(downloadedBytes)).toBe(GOOGLE_WORKSPACE_TEST_FILE_SHA256);
   expect(removed).toBeUndefined();
-  expect(invalidated).toEqual([GOOGLE_WORKSPACE_TEST_AUTHORIZATION.replace("Bearer ", "")]);
+  expect(invalidated).toEqual([GOOGLE_WORKSPACE_TEST_TOKEN]);
   expect(proof).toEqual({
     calls: ["upload", "download", "delete", "unauthorized"],
     requests: [],
@@ -129,7 +130,7 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       authorization: GOOGLE_WORKSPACE_TEST_AUTHORIZATION,
       name: "regression.bin",
       sha256: GOOGLE_WORKSPACE_TEST_FILE_SHA256,
-      size: GOOGLE_WORKSPACE_TEST_FILE_SIZE,
+      size: GOOGLE_WORKSPACE_TEST_FILE_BYTES.byteLength,
     },
   });
 });
@@ -155,7 +156,7 @@ test("builds every Workspace service request from Google's Discovery surface", a
       async __invalidateToken() {},
       async __token(interactive) {
         tokenRequests.push(interactive);
-        return { ok: true, token: "browser-google-token" };
+        return { ok: true, token: GOOGLE_WORKSPACE_TEST_TOKEN };
       },
     },
     {

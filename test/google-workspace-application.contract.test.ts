@@ -1,0 +1,44 @@
+import { expect, test } from "vitest";
+import {
+  GOOGLE_WORKSPACE_APPLICATION_CARD,
+  GOOGLE_WORKSPACE_AUTH_REQUIREMENTS,
+  GOOGLE_WORKSPACE_MEMBER_INDEX,
+  GOOGLE_WORKSPACE_REQUESTS,
+} from "../src/google-workspace";
+
+test("exports one ready Google application whose requests and members agree", () => {
+  expect(GOOGLE_WORKSPACE_APPLICATION_CARD).toEqual({
+    availability: "ready",
+    id: "google-workspace",
+    name: "Google Workspace",
+    summary:
+      "Drive, Gmail, Calendar, Docs, Sheets, Slides, Chat, and People with native Drive transfers.",
+  });
+  expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.binding).toBe("google-workspace");
+  expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.origins).toEqual(["https://www.googleapis.com/"]);
+  expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.scopes).toContain(
+    "https://www.googleapis.com/auth/drive",
+  );
+
+  expect(Object.keys(GOOGLE_WORKSPACE_REQUESTS)).toEqual([
+    "drive",
+    "gmail",
+    "calendar",
+    "docs",
+    "sheets",
+    "slides",
+    "chat",
+    "people",
+  ]);
+  expect(GOOGLE_WORKSPACE_MEMBER_INDEX).toContainEqual(
+    expect.objectContaining({
+      effect: "read",
+      path: "drive.files.list",
+      signature: expect.stringContaining("files.list"),
+    }),
+  );
+  expect(GOOGLE_WORKSPACE_MEMBER_INDEX).toContainEqual(
+    expect.objectContaining({ effect: "write", path: "drive.files.upload" }),
+  );
+  expect(GOOGLE_WORKSPACE_REQUESTS.drive.resources.resources.files.methods.list).toBeDefined();
+});
