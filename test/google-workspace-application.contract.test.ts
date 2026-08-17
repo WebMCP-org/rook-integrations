@@ -5,11 +5,11 @@ import {
   GOOGLE_WORKSPACE_AUTH_REQUIREMENTS,
   GOOGLE_WORKSPACE_MEMBER_INDEX,
   GOOGLE_WORKSPACE_REQUESTS,
-} from "../src/google-workspace";
+} from "@rook/google-workspace";
 
 test("exports one ready Google application whose requests and members agree", () => {
   expect(GOOGLE_WORKSPACE_APPLICATION_CARD).toEqual({
-    availability: "ready",
+    availability: "ready; native files",
     id: "google-workspace",
     name: "Google Workspace",
     summary:

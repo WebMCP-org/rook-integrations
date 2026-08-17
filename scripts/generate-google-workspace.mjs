@@ -106,10 +106,7 @@ function methodParams(document, namespace, typeName, method) {
   for (const [name, parameter] of methodParameters(document, method)) {
     comment(lines, parameter.description, "    ");
     const optional = parameter.required ? "" : "?";
-    const type = parameter.repeated
-      ? `Array<${schemaType(parameter, namespace, "    ")}>`
-      : schemaType(parameter, namespace, "    ");
-    lines.push(`    ${property(name)}${optional}: ${type};`);
+    lines.push(`    ${property(name)}${optional}: ${parameterType(parameter, namespace, "    ")};`);
   }
   if (method.request?.$ref) {
     lines.push(
@@ -163,10 +160,7 @@ function workspaceType(documents) {
   const uploadParameters = methodParameters(drive, create)
     .map(([name, parameter]) => {
       const optional = parameter.required ? "" : "?";
-      const type = parameter.repeated
-        ? `Array<${schemaType(parameter, "GoogleDrive", "  ")}>`
-        : schemaType(parameter, "GoogleDrive", "  ");
-      return `  ${property(name)}${optional}: ${type};`;
+      return `  ${property(name)}${optional}: ${parameterType(parameter, "GoogleDrive", "  ")};`;
     })
     .join("\n");
   const factories = documents
@@ -240,15 +234,9 @@ function memberIndex(documents) {
     callPrefix: member.signature.slice(0, member.signature.lastIndexOf("(")),
     output: /: Promise<(.+)>$/u.exec(member.signature)?.[1] ?? "unknown",
   }));
-  return `export type GoogleWorkspaceMember = {
-  readonly callPrefix: string;
-  readonly effect: "authorization" | "read" | "write";
-  readonly inputNames: readonly string[];
-  readonly output: string;
-  readonly path: string;
-  readonly signature: string;
-  readonly summary: string;
-};
+  return `import type { ApplicationMember } from "./application-face";
+
+export type GoogleWorkspaceMember = ApplicationMember;
 
 export const GOOGLE_WORKSPACE_MEMBER_INDEX = ${JSON.stringify(reflectedMembers, null, 2)} as const satisfies readonly GoogleWorkspaceMember[];`;
 }
@@ -326,6 +314,11 @@ function methodParameters(document, method) {
     ),
     ...(method.parameters ?? {}),
   }).sort(byKey);
+}
+
+function parameterType(parameter, namespace, indent) {
+  const type = schemaType(parameter, namespace, indent);
+  return parameter.repeated ? `Array<${type}>` : type;
 }
 
 function comment(lines, value, indent) {

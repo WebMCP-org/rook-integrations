@@ -1,15 +1,9 @@
 // Generated from the checked-in Google Discovery documents. Do not edit.
 // Regenerate with: vp run generate
 
-export type GoogleWorkspaceMember = {
-  readonly callPrefix: string;
-  readonly effect: "authorization" | "read" | "write";
-  readonly inputNames: readonly string[];
-  readonly output: string;
-  readonly path: string;
-  readonly signature: string;
-  readonly summary: string;
-};
+import type { ApplicationMember } from "./application-face";
+
+export type GoogleWorkspaceMember = ApplicationMember;
 
 export const GOOGLE_WORKSPACE_MEMBER_INDEX = [
   {

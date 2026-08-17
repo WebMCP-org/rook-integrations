@@ -28,9 +28,10 @@ export {
 export { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
 
 const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
+const RESPONSE_ERROR_LIMIT_BYTES = 64 * 1024;
 
 export const GOOGLE_WORKSPACE_APPLICATION_CARD = {
-  availability: "ready",
+  availability: "ready; native files",
   id: GOOGLE_WORKSPACE_APPLICATION_ID,
   name: "Google Workspace",
   summary:
@@ -77,13 +78,13 @@ type GoogleWorkspaceFiles = {
 };
 
 type GoogleParameterDescription = {
-  readonly location: string;
+  readonly location: "path" | "query";
   readonly repeated: boolean;
   readonly required: boolean;
 };
 
 type GoogleMethodDescription = {
-  readonly httpMethod: string;
+  readonly httpMethod: "DELETE" | "GET" | "HEAD" | "PATCH" | "POST" | "PUT";
   readonly parameters: Readonly<Record<string, GoogleParameterDescription>>;
   readonly path: string;
   readonly request: boolean;
@@ -117,7 +118,6 @@ export function installGoogleWorkspace(
   const nativeFetch = fetch;
   const nativeJsonParse = JSON.parse;
   const nativeJsonStringify = JSON.stringify;
-  const responseErrorLimit = 64 * 1024;
   let token: Promise<string> | undefined;
 
   const accessToken = (interactive: boolean) => {
@@ -150,12 +150,12 @@ export function installGoogleWorkspace(
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
-        const remaining = responseErrorLimit - bytes;
+        const remaining = RESPONSE_ERROR_LIMIT_BYTES - bytes;
         if (remaining <= 0) break;
         const chunk = value.byteLength > remaining ? value.subarray(0, remaining) : value;
         bytes += chunk.byteLength;
-        text += decoder.decode(chunk, { stream: bytes < responseErrorLimit });
-        if (bytes === responseErrorLimit) break;
+        text += decoder.decode(chunk, { stream: bytes < RESPONSE_ERROR_LIMIT_BYTES });
+        if (bytes === RESPONSE_ERROR_LIMIT_BYTES) break;
       }
       text += decoder.decode();
     } finally {
@@ -228,7 +228,7 @@ export function installGoogleWorkspace(
       method.request && input.requestBody !== undefined
         ? nativeJsonStringify(input.requestBody)
         : undefined;
-    return await authenticatedFetch(requestUrl(service, method, input), {
+    return authenticatedFetch(requestUrl(service, method, input), {
       body,
       headers: body === undefined ? undefined : { "content-type": "application/json" },
       method: method.httpMethod,
@@ -244,7 +244,7 @@ export function installGoogleWorkspace(
     if (response.status === 204 || response.headers.get("content-length") === "0") return undefined;
     const contentType = response.headers.get("content-type") ?? "";
     if (contentType.includes("json")) return nativeJsonParse(await response.text());
-    return await response.blob();
+    return response.blob();
   };
 
   const buildResource = (
@@ -273,47 +273,52 @@ export function installGoogleWorkspace(
 
   const driveService = services.drive;
   const drive = buildResource(driveService, driveService.resources);
-  const driveFiles = drive.files as Record<string, unknown>;
+  const driveFiles = drive.files;
+  if (!driveFiles || typeof driveFiles !== "object") {
+    throw new Error("Google Drive files resource is missing");
+  }
   namespace.drive = () => drive;
   const createFile = driveService.resources.resources.files.methods.create;
   const getFile = driveService.resources.resources.files.methods.get;
-  driveFiles.upload = async (input: Record<string, unknown>) => {
-    const { file, ...requestInput } = input;
-    if (!(file instanceof NativeFile)) {
-      throw new Error("drive.files.upload requires a native File");
-    }
-    const boundary = `rook-${crypto.randomUUID()}`;
-    const requestBody = requestInput.requestBody ?? { name: file.name };
-    requestInput.fields ??= "id,name,mimeType,size,sha256Checksum";
-    const body = new NativeBlob([
-      `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
-      nativeJsonStringify(requestBody),
-      `\r\n--${boundary}\r\nContent-Type: ${file.type || "application/octet-stream"}\r\n\r\n`,
-      file,
-      `\r\n--${boundary}--\r\n`,
-    ]);
-    const response = await authenticatedFetch(
-      requestUrl(driveService, createFile, requestInput, createFile.uploadPath),
-      {
-        body,
-        headers: { "content-type": `multipart/related; boundary=${boundary}` },
-        method: createFile.httpMethod,
-      },
-    );
-    return nativeJsonParse(await response.text());
-  };
-  driveFiles.downloadToWorkspace = async (input: Record<string, unknown>) => {
-    const { path, sha256, ...requestInput } = input;
-    const response = await send(driveService, getFile, { ...requestInput, alt: "media" });
-    if (!(response.body instanceof NativeReadableStream)) {
-      throw new Error("Google Drive download returned an invalid response body");
-    }
-    return await workspace.writeStream({
-      path: String(path),
-      stream: response.body,
-      ...(typeof sha256 === "string" ? { expectedSha256: sha256 } : {}),
-    });
-  };
+  Object.assign(driveFiles, {
+    async upload(input: Record<string, unknown>) {
+      const { file, ...requestInput } = input;
+      if (!(file instanceof NativeFile)) {
+        throw new Error("drive.files.upload requires a native File");
+      }
+      const boundary = `rook-${crypto.randomUUID()}`;
+      const requestBody = requestInput.requestBody ?? { name: file.name };
+      requestInput.fields ??= "id,name,mimeType,size,sha256Checksum";
+      const body = new NativeBlob([
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
+        nativeJsonStringify(requestBody),
+        `\r\n--${boundary}\r\nContent-Type: ${file.type || "application/octet-stream"}\r\n\r\n`,
+        file,
+        `\r\n--${boundary}--\r\n`,
+      ]);
+      const response = await authenticatedFetch(
+        requestUrl(driveService, createFile, requestInput, createFile.uploadPath),
+        {
+          body,
+          headers: { "content-type": `multipart/related; boundary=${boundary}` },
+          method: createFile.httpMethod,
+        },
+      );
+      return nativeJsonParse(await response.text());
+    },
+    async downloadToWorkspace(input: Record<string, unknown>) {
+      const { path, sha256, ...requestInput } = input;
+      const response = await send(driveService, getFile, { ...requestInput, alt: "media" });
+      if (!(response.body instanceof NativeReadableStream)) {
+        throw new Error("Google Drive download returned an invalid response body");
+      }
+      return workspace.writeStream({
+        path: String(path),
+        stream: response.body,
+        ...(typeof sha256 === "string" ? { expectedSha256: sha256 } : {}),
+      });
+    },
+  });
 
   Object.assign(target, namespace);
   return target as GoogleWorkspaceNamespace;

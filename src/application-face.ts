@@ -7,9 +7,8 @@ export type ApplicationCard = {
 
 export type ApplicationMember = {
   readonly callPrefix: string;
-  readonly effect?: "authorization" | "read" | "write";
+  readonly effect: "authorization" | "read" | "write";
   readonly inputNames: readonly string[];
-  readonly kind?: string;
   readonly output: string;
   readonly path: string;
   readonly signature: string;

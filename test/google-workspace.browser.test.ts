@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { installGoogleWorkspace } from "../src/google-workspace";
+import { installGoogleWorkspace } from "@rook/google-workspace";
 import {
   GOOGLE_WORKSPACE_TEST_BOUNDARY,
   GOOGLE_WORKSPACE_TEST_AUTHORIZATION,
@@ -39,9 +39,9 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       location.href,
     );
     if (providerUrl.origin !== "https://www.googleapis.com") {
-      return await browserFetch(input, init);
+      return browserFetch(input, init);
     }
-    return await browserFetch(
+    return browserFetch(
       `${GOOGLE_WORKSPACE_TEST_BOUNDARY}${providerUrl.pathname}${providerUrl.search}`,
       init,
     );
@@ -143,9 +143,9 @@ test("builds every Workspace service request from Google's Discovery surface", a
       location.href,
     );
     if (!providerUrl.hostname.endsWith("googleapis.com")) {
-      return await browserFetch(input, init);
+      return browserFetch(input, init);
     }
-    return await browserFetch(
+    return browserFetch(
       `${GOOGLE_WORKSPACE_TEST_BOUNDARY}/api${providerUrl.pathname}${providerUrl.search}`,
       init,
     );

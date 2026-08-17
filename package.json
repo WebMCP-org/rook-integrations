@@ -15,8 +15,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/google-workspace.ts",
-    "./src/*": "./src/*"
+    ".": "./src/google-workspace.ts"
   },
   "publishConfig": {
     "access": "public"
