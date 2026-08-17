@@ -1,6 +1,13 @@
+import type { CuratedApplicationFace } from "./application-face";
 import type { GoogleWorkspaceNamespace } from "./google-workspace.generated";
+import { GOOGLE_WORKSPACE_MEMBER_INDEX } from "./google-workspace.members.generated";
 import { GOOGLE_WORKSPACE_REQUESTS } from "./google-workspace.requests.generated";
 
+export type {
+  ApplicationCard,
+  ApplicationMember,
+  CuratedApplicationFace,
+} from "./application-face";
 export type {
   DriveDownloadInput,
   DriveUploadInput,
@@ -45,6 +52,12 @@ export const GOOGLE_WORKSPACE_AUTH_REQUIREMENTS = {
   ],
   skillNames: [GOOGLE_WORKSPACE_APPLICATION_CARD.id],
 } as const;
+
+export const GOOGLE_WORKSPACE_APPLICATION_FACE = {
+  card: GOOGLE_WORKSPACE_APPLICATION_CARD,
+  members: GOOGLE_WORKSPACE_MEMBER_INDEX,
+  relatedSkills: GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.skillNames,
+} as const satisfies CuratedApplicationFace;
 
 type GoogleWorkspaceHost = {
   __invalidateToken(token: string): Promise<void>;

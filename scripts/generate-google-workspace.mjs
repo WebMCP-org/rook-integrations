@@ -235,15 +235,22 @@ function memberIndex(documents) {
     },
   );
   members.sort((left, right) => left.path.localeCompare(right.path));
+  const reflectedMembers = members.map((member) => ({
+    ...member,
+    callPrefix: member.signature.slice(0, member.signature.lastIndexOf("(")),
+    output: /: Promise<(.+)>$/u.exec(member.signature)?.[1] ?? "unknown",
+  }));
   return `export type GoogleWorkspaceMember = {
+  readonly callPrefix: string;
   readonly effect: "authorization" | "read" | "write";
   readonly inputNames: readonly string[];
+  readonly output: string;
   readonly path: string;
   readonly signature: string;
   readonly summary: string;
 };
 
-export const GOOGLE_WORKSPACE_MEMBER_INDEX = ${JSON.stringify(members, null, 2)} as const satisfies readonly GoogleWorkspaceMember[];`;
+export const GOOGLE_WORKSPACE_MEMBER_INDEX = ${JSON.stringify(reflectedMembers, null, 2)} as const satisfies readonly GoogleWorkspaceMember[];`;
 }
 
 function collectMembers(document, resource, path, members) {

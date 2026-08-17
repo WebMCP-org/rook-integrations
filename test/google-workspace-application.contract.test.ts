@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import {
+  GOOGLE_WORKSPACE_APPLICATION_FACE,
   GOOGLE_WORKSPACE_APPLICATION_CARD,
   GOOGLE_WORKSPACE_AUTH_REQUIREMENTS,
   GOOGLE_WORKSPACE_MEMBER_INDEX,
@@ -18,6 +19,18 @@ test("exports one ready Google application whose requests and members agree", ()
   expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.origins).toEqual(["https://www.googleapis.com/"]);
   expect(GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.scopes).toContain(
     "https://www.googleapis.com/auth/drive",
+  );
+  expect(GOOGLE_WORKSPACE_APPLICATION_FACE).toEqual({
+    card: GOOGLE_WORKSPACE_APPLICATION_CARD,
+    members: GOOGLE_WORKSPACE_MEMBER_INDEX,
+    relatedSkills: GOOGLE_WORKSPACE_AUTH_REQUIREMENTS.skillNames,
+  });
+  expect(GOOGLE_WORKSPACE_APPLICATION_FACE.members).toContainEqual(
+    expect.objectContaining({
+      callPrefix: 'ctx.applications["google-workspace"].drive().files.list',
+      output: "unknown",
+      path: "drive.files.list",
+    }),
   );
 
   expect(Object.keys(GOOGLE_WORKSPACE_REQUESTS)).toEqual([
