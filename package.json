@@ -1,0 +1,44 @@
+{
+  "name": "@rook/google-workspace",
+  "version": "0.1.0",
+  "description": "Browser-native typed Google Workspace client and model skill for Rook",
+  "license": "FSL-1.1-MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebMCP-org/rook-integrations.git"
+  },
+  "files": [
+    "discovery",
+    "skills",
+    "src"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/google-workspace.ts",
+    "./src/*": "./src/*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "vp check && vp run typecheck && vp run test",
+    "check:generated": "node scripts/generate-google-workspace.mjs --check",
+    "generate": "node scripts/generate-google-workspace.mjs",
+    "test": "vp exec vitest run --config vitest.browser.config.ts",
+    "typecheck": "vp run check:generated && vp exec tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.4",
+    "@vitest/browser-playwright": "4.1.10",
+    "typescript": "5.9.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.4",
+    "vite-plus": "0.2.6",
+    "vitest": "4.1.10",
+    "zod": "4.3.6"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "packageManager": "pnpm@11.9.0"
+}
