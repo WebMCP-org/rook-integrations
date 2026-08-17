@@ -31,6 +31,7 @@
   "devDependencies": {
     "@types/node": "24.10.4",
     "@vitest/browser-playwright": "4.1.10",
+    "playwright": "1.61.1",
     "typescript": "5.9.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.4",
     "vite-plus": "0.2.6",
