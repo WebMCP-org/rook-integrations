@@ -299,14 +299,15 @@ export function installGoogleWorkspace(
         file,
         `\r\n--${boundary}--\r\n`,
       ]);
-      const response = await authenticatedFetch(
+      const url = new NativeURL(
         requestUrl(driveService, createFile, requestInput, createFile.uploadPath),
-        {
-          body,
-          headers: { "content-type": `multipart/related; boundary=${boundary}` },
-          method: createFile.httpMethod,
-        },
       );
+      url.searchParams.set("uploadType", "multipart");
+      const response = await authenticatedFetch(url.href, {
+        body,
+        headers: { "content-type": `multipart/related; boundary=${boundary}` },
+        method: createFile.httpMethod,
+      });
       return nativeJsonParse(await response.text());
     },
     async downloadToWorkspace(input: Record<string, unknown>) {

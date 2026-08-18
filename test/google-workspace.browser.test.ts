@@ -102,6 +102,9 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
   });
   const removed = await drive.files.delete({ fileId: uploaded.id });
   await expect(drive.files.delete({ fileId: "unauthorized" })).rejects.toThrow("expired token");
+  const text = "Rook text upload regression\n";
+  const textFile = new File([text], "regression.txt", { type: "text/plain" });
+  await drive.files.upload({ file: textFile });
   const proof = googleWorkspaceBoundaryProofSchema.parse(
     await fetch(`${GOOGLE_WORKSPACE_TEST_BOUNDARY}/proof`).then((response) => response.json()),
   );
@@ -128,13 +131,13 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
   expect(removed).toBeUndefined();
   expect(invalidated).toEqual([GOOGLE_WORKSPACE_TEST_TOKEN]);
   expect(proof).toEqual({
-    calls: ["upload", "download", "delete", "unauthorized"],
+    calls: ["upload", "download", "delete", "unauthorized", "upload"],
     requests: [],
     upload: {
       authorization: GOOGLE_WORKSPACE_TEST_AUTHORIZATION,
-      name: "regression.bin",
-      sha256: GOOGLE_WORKSPACE_TEST_FILE_SHA256,
-      size: GOOGLE_WORKSPACE_TEST_FILE_BYTES.byteLength,
+      name: textFile.name,
+      sha256: await sha256(new TextEncoder().encode(text)),
+      size: textFile.size,
     },
   });
 });

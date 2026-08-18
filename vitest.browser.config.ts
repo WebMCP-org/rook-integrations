@@ -56,6 +56,9 @@ const googleWorkspaceBoundary: Plugin = {
       }
 
       if (providerPath === "/upload/drive/v3/files" && request.method === "POST") {
+        if (url.searchParams.get("uploadType") !== "multipart") {
+          throw new Error("Drive upload did not declare uploadType=multipart");
+        }
         const body = await readBody(request);
         const contentType = request.headers["content-type"] ?? "";
         const boundary = /boundary=([^;]+)/u.exec(contentType)?.[1];
@@ -72,8 +75,7 @@ const googleWorkspaceBoundary: Plugin = {
         ) {
           throw new Error("Drive upload carried invalid metadata");
         }
-        const fileHeader = body.indexOf(Buffer.from("Content-Type: application/octet-stream"));
-        const fileStart = body.indexOf(separator, fileHeader) + separator.length;
+        const fileStart = body.indexOf(separator, metadataEnd) + separator.length;
         const fileEnd = body.indexOf(Buffer.from(`\r\n--${boundary}--`), fileStart);
         const file = body.subarray(fileStart, fileEnd);
         proof.calls.push("upload");

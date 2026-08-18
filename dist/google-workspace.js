@@ -18565,7 +18565,9 @@ function installGoogleWorkspace(target, transport, workspace, services = GOOGLE_
 				file,
 				`\r\n--${boundary}--\r\n`
 			]);
-			const response = await authenticatedFetch(requestUrl(driveService, createFile, requestInput, createFile.uploadPath), {
+			const url = new NativeURL(requestUrl(driveService, createFile, requestInput, createFile.uploadPath));
+			url.searchParams.set("uploadType", "multipart");
+			const response = await authenticatedFetch(url.href, {
 				body,
 				headers: { "content-type": `multipart/related; boundary=${boundary}` },
 				method: createFile.httpMethod
