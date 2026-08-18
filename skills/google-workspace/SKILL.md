@@ -5,7 +5,7 @@ description: Use the built-in typed Google Workspace client for Drive, Gmail, Ca
 
 # Google Workspace
 
-Use `ctx.google` as the only Google Workspace API surface. Its resources,
+Use `ctx.applications["google-workspace"]` as the only Google Workspace API surface. Its resources,
 method names, parameters, and response shapes are generated from Google's
 Discovery documents.
 
@@ -15,7 +15,7 @@ Normal calls reuse Chrome Identity's short-lived cached grant. If a call says
 authentication is required, request the grant once and retry explicitly:
 
 ```js
-await ctx.google.authorize();
+await ctx.applications["google-workspace"].authorize();
 ```
 
 Do not ask for a Google MCP connection. A provider rejection is final for that
@@ -25,34 +25,34 @@ call; never repeat a mutation through browser automation automatically.
 
 The service factories are synchronous:
 
-- `ctx.google.drive()`
-- `ctx.google.gmail()`
-- `ctx.google.calendar()`
-- `ctx.google.docs()`
-- `ctx.google.sheets()`
-- `ctx.google.slides()`
-- `ctx.google.chat()`
-- `ctx.google.people()`
+- `ctx.applications["google-workspace"].drive()`
+- `ctx.applications["google-workspace"].gmail()`
+- `ctx.applications["google-workspace"].calendar()`
+- `ctx.applications["google-workspace"].docs()`
+- `ctx.applications["google-workspace"].sheets()`
+- `ctx.applications["google-workspace"].slides()`
+- `ctx.applications["google-workspace"].chat()`
+- `ctx.applications["google-workspace"].people()`
 
 Methods use the official resource tree. Put JSON request bodies in
 `requestBody`; path and query parameters stay beside it.
 
 ```js
-const recent = await ctx.google.drive().files.list({
+const recent = await ctx.applications["google-workspace"].drive().files.list({
   fields: "nextPageToken,files(id,name,mimeType,modifiedTime,webViewLink)",
   orderBy: "modifiedTime desc",
   pageSize: 25,
   q: "trashed = false",
 });
 
-const events = await ctx.google.calendar().events.list({
+const events = await ctx.applications["google-workspace"].calendar().events.list({
   calendarId: "primary",
   maxResults: 50,
   singleEvents: true,
   timeMin: new Date().toISOString(),
 });
 
-await ctx.google.docs().documents.batchUpdate({
+await ctx.applications["google-workspace"].docs().documents.batchUpdate({
   documentId: "document-id",
   requestBody: {
     requests: [{ insertText: { endOfSegmentLocation: {}, text: "Status update\n" } }],
@@ -72,14 +72,14 @@ atomic workspace download.
 
 ```js
 const file = await ctx.workspace.openFile({ path: "/reports/status.pdf" });
-const uploaded = await ctx.google.drive().files.upload({
+const uploaded = await ctx.applications["google-workspace"].drive().files.upload({
   file,
   fields: "id,name,mimeType,size,sha256Checksum,webViewLink",
   requestBody: { name: file.name, parents: ["folder-id"] },
 });
 if (!uploaded.id) throw new Error("Drive returned no file ID");
 
-const local = await ctx.google.drive().files.downloadToWorkspace({
+const local = await ctx.applications["google-workspace"].drive().files.downloadToWorkspace({
   fileId: uploaded.id,
   path: `/downloads/${uploaded.name ?? file.name}`,
   sha256: uploaded.sha256Checksum,

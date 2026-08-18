@@ -2,6 +2,10 @@
   "name": "@rook/google-workspace",
   "version": "0.1.0",
   "description": "Browser-native typed Google Workspace client and model skill for Rook",
+  "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
+  "bugs": {
+    "url": "https://github.com/WebMCP-org/rook-integrations/issues"
+  },
   "license": "FSL-1.1-MIT",
   "repository": {
     "type": "git",
@@ -9,24 +13,35 @@
   },
   "files": [
     "discovery",
+    "dist",
     "skills",
     "src"
   ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/google-workspace.js",
+  "types": "./dist/google-workspace.d.ts",
   "exports": {
-    ".": "./src/google-workspace.ts",
-    "./src/*": "./src/*"
+    ".": {
+      "types": "./dist/google-workspace.d.ts",
+      "import": "./dist/google-workspace.js",
+      "default": "./dist/google-workspace.js"
+    }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "check": "vp check && vp run typecheck && vp run test",
+    "build": "vp pack",
+    "check": "vp check && vp run typecheck && vp run test && vp run validate:package",
     "check:generated": "node scripts/generate-google-workspace.mjs --check",
     "generate": "node scripts/generate-google-workspace.mjs",
-    "test": "vp exec vitest run --config vitest.browser.config.ts",
-    "typecheck": "vp run check:generated && vp exec tsc --noEmit"
+    "prepublishOnly": "vp run validate:package",
+    "test": "vp run test:contract && vp run test:browser",
+    "test:browser": "vp exec vitest run --config vitest.browser.config.ts",
+    "test:contract": "vp exec vitest run test/google-workspace-application.contract.test.ts",
+    "typecheck": "vp run check:generated && vp exec tsc --noEmit",
+    "validate:package": "vp exec -- node scripts/validate-package.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.4",
