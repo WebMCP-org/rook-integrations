@@ -1,6 +1,9 @@
 import type { CuratedApplicationFace } from "./application-face";
+import { createMimeMessage, Mailbox, type MailboxAddrObject } from "mimetext/browser";
 import {
   GOOGLE_WORKSPACE_APPLICATION_ID,
+  type GmailEmailAddress,
+  type GmailSendEmailInput,
   type GoogleWorkspaceNamespace,
 } from "./google-workspace.generated";
 import { GOOGLE_WORKSPACE_MEMBER_INDEX } from "./google-workspace.members.generated";
@@ -14,6 +17,8 @@ export type {
 export type {
   DriveDownloadInput,
   DriveUploadInput,
+  GmailEmailAddress,
+  GmailSendEmailInput,
   GoogleCalendar,
   GoogleChat,
   GoogleDocs,
@@ -117,7 +122,9 @@ export function installGoogleWorkspace(
   const NativeHeaders = Headers;
   const NativeReadableStream = ReadableStream;
   const NativeTextDecoder = TextDecoder;
+  const NativeTextEncoder = TextEncoder;
   const NativeURL = URL;
+  const nativeBtoa = btoa;
   const nativeFetch = fetch;
   const nativeJsonParse = JSON.parse;
   const nativeJsonStringify = JSON.stringify;
@@ -271,8 +278,76 @@ export function installGoogleWorkspace(
     },
   };
   for (const [name, service] of Object.entries(services)) {
-    if (name !== "drive") namespace[name] = () => buildResource(service, service.resources);
+    if (name !== "drive" && name !== "gmail") {
+      namespace[name] = () => buildResource(service, service.resources);
+    }
   }
+
+  const gmailService = services.gmail;
+  const gmail = buildResource(gmailService, gmailService.resources);
+  const gmailUsers = gmail.users;
+  const gmailMessages =
+    gmailUsers && typeof gmailUsers === "object"
+      ? (gmailUsers as Record<string, unknown>).messages
+      : undefined;
+  if (!gmailMessages || typeof gmailMessages !== "object") {
+    throw new Error("Gmail messages resource is missing");
+  }
+  namespace.gmail = () => gmail;
+  const sendGmailMessage = gmailService.resources.resources.users.resources.messages.methods.send;
+  const textEncoder = new NativeTextEncoder();
+  const mailbox = (address: GmailEmailAddress): MailboxAddrObject =>
+    typeof address === "string"
+      ? { addr: address }
+      : { addr: address.email, ...(address.name ? { name: address.name } : {}) };
+  const mailboxes = (addresses: GmailEmailAddress | GmailEmailAddress[]) =>
+    (Array.isArray(addresses) ? addresses : [addresses]).map(mailbox);
+  const base64 = (bytes: Uint8Array) => {
+    const chunks: string[] = [];
+    for (let offset = 0; offset < bytes.byteLength; offset += 0x8000) {
+      chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + 0x8000)));
+    }
+    return nativeBtoa(chunks.join(""));
+  };
+  const foldedBase64 = (bytes: Uint8Array) =>
+    base64(bytes)
+      .match(/.{1,76}/gu)
+      ?.join("\r\n") ?? "";
+  Object.assign(gmailMessages, {
+    async sendEmail(input: GmailSendEmailInput) {
+      const message = createMimeMessage();
+      message.setSender(mailbox(input.from));
+      message.setRecipients(mailboxes(input.to));
+      if (input.cc) message.setCc(mailboxes(input.cc));
+      if (input.bcc) message.setBcc(mailboxes(input.bcc));
+      if (input.replyTo) message.setHeader("Reply-To", new Mailbox(mailbox(input.replyTo)));
+      message.setSubject(input.subject);
+      if (input.inReplyTo) message.setHeader("In-Reply-To", input.inReplyTo);
+      if (input.references?.length) message.setHeader("References", input.references.join(" "));
+      message.addMessage({
+        contentType: "text/plain",
+        data: foldedBase64(textEncoder.encode(input.text)),
+        encoding: "base64",
+      });
+      for (const attachment of input.attachments ?? []) {
+        if (!(attachment instanceof NativeFile)) {
+          throw new Error("gmail.users.messages.sendEmail attachments require native Files");
+        }
+        message.addAttachment({
+          contentType: attachment.type || "application/octet-stream",
+          data: foldedBase64(new Uint8Array(await attachment.arrayBuffer())),
+          filename: attachment.name,
+        });
+      }
+      return invoke(gmailService, sendGmailMessage, {
+        userId: input.userId ?? "me",
+        requestBody: {
+          raw: message.asEncoded(),
+          ...(input.threadId ? { threadId: input.threadId } : {}),
+        },
+      });
+    },
+  });
 
   const driveService = services.drive;
   const drive = buildResource(driveService, driveService.resources);

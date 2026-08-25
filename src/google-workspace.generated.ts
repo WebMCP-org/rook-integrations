@@ -4627,6 +4627,8 @@ export namespace GoogleGmail {
     /** Gets the specified message attachment. */
     get(params: UsersMessagesAttachmentsGetParams): Promise<GoogleGmail.MessagePartBody>;
   };
+    /** Compose and send a plain-text email while keeping MIME and base64 out of model code. */
+    sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>;
   };
     settings: {
     /** Gets the auto-forwarding setting for the specified account. For more information, see [Manage email forwarding](https://developers.google.com/workspace/gmail/api/guides/forwarding_settings). */
@@ -17490,6 +17492,26 @@ export type DriveDownloadInput = {
   fileId: string;
   path: string;
   sha256?: string;
+};
+
+export type GmailEmailAddress = string | {
+  email: string;
+  name?: string;
+};
+
+export type GmailSendEmailInput = {
+  attachments?: File[];
+  bcc?: GmailEmailAddress | GmailEmailAddress[];
+  cc?: GmailEmailAddress | GmailEmailAddress[];
+  from: GmailEmailAddress;
+  inReplyTo?: string;
+  references?: string[];
+  replyTo?: GmailEmailAddress;
+  subject: string;
+  text: string;
+  threadId?: string;
+  to: GmailEmailAddress | GmailEmailAddress[];
+  userId?: string;
 };
 
 export type GoogleWorkspaceNamespace = {

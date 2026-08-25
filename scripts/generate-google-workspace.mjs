@@ -101,6 +101,12 @@ function resourceType(document, resource, namespace, path, methodTypes) {
       "    downloadToWorkspace(input: DriveDownloadInput): Promise<{ path: string; sha256: string; size: number }>;",
     );
   }
+  if (namespace === "GoogleGmail" && path.join(".") === "users.messages") {
+    members.push(
+      "    /** Compose and send a plain-text email while keeping MIME and base64 out of model code. */",
+      "    sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>;",
+    );
+  }
   return members.length === 0 ? "Record<string, never>" : `{\n${members.join("\n")}\n  }`;
 }
 
@@ -182,6 +188,26 @@ export type DriveDownloadInput = {
   sha256?: string;
 };
 
+export type GmailEmailAddress = string | {
+  email: string;
+  name?: string;
+};
+
+export type GmailSendEmailInput = {
+  attachments?: File[];
+  bcc?: GmailEmailAddress | GmailEmailAddress[];
+  cc?: GmailEmailAddress | GmailEmailAddress[];
+  from: GmailEmailAddress;
+  inReplyTo?: string;
+  references?: string[];
+  replyTo?: GmailEmailAddress;
+  subject: string;
+  text: string;
+  threadId?: string;
+  to: GmailEmailAddress | GmailEmailAddress[];
+  userId?: string;
+};
+
 export type GoogleWorkspaceNamespace = {
   /** Request the employee's Google Workspace grant from Chrome Identity. */
   authorize(): Promise<{ authorized: true }>;
@@ -235,6 +261,26 @@ function memberIndex(documents) {
       path: "drive.files.downloadToWorkspace",
       signature: `${applicationPath}.drive().files.downloadToWorkspace(input: DriveDownloadInput): Promise<{ path: string; sha256: string; size: number }>`,
       summary: "Stream Drive bytes directly into an atomically published workspace path.",
+    },
+    {
+      effect: "write",
+      inputNames: [
+        "attachments",
+        "bcc",
+        "cc",
+        "from",
+        "inReplyTo",
+        "references",
+        "replyTo",
+        "subject",
+        "text",
+        "threadId",
+        "to",
+        "userId",
+      ],
+      path: "gmail.users.messages.sendEmail",
+      signature: `${applicationPath}.gmail().users.messages.sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>`,
+      summary: "Compose and send a plain-text email with optional native File attachments.",
     },
   );
   members.sort((left, right) => left.path.localeCompare(right.path));

@@ -43,6 +43,9 @@
     "typecheck": "vp run check:generated && vp exec tsc --noEmit",
     "validate:package": "vp exec -- node scripts/validate-package.mjs"
   },
+  "dependencies": {
+    "mimetext": "3.0.28"
+  },
   "devDependencies": {
     "@types/node": "24.10.4",
     "@vitest/browser-playwright": "4.1.10",

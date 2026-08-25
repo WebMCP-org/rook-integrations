@@ -3385,6 +3385,28 @@ export const GOOGLE_WORKSPACE_MEMBER_INDEX = [
   {
     "effect": "write",
     "inputNames": [
+      "attachments",
+      "bcc",
+      "cc",
+      "from",
+      "inReplyTo",
+      "references",
+      "replyTo",
+      "subject",
+      "text",
+      "threadId",
+      "to",
+      "userId"
+    ],
+    "path": "gmail.users.messages.sendEmail",
+    "signature": "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>",
+    "summary": "Compose and send a plain-text email with optional native File attachments.",
+    "callPrefix": "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail",
+    "output": "GoogleGmail.Message"
+  },
+  {
+    "effect": "write",
+    "inputNames": [
       "$.xgafv",
       "alt",
       "fields",
