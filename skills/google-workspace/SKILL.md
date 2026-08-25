@@ -91,6 +91,27 @@ Do not turn Drive files into base64, byte arrays, or MCP arguments. For a
 Google-native document, use Drive's export method; it returns a native `Blob`
 that can be streamed to `ctx.workspace.writeStream`.
 
+## Send Gmail without constructing MIME
+
+For ordinary email and replies, use the browser-native helper. Its `text` is
+sent exactly as supplied; MIME line endings and base64 stay inside the provider
+client. Attach workspace files as native `File` values.
+
+```js
+const attachment = await ctx.workspace.openFile({ path: "/reports/status.pdf" });
+await ctx.applications["google-workspace"].gmail().users.messages.sendEmail({
+  from: "employee@example.com",
+  to: "manager@example.com",
+  subject: "Status update",
+  text: "First paragraph.\n\nSecond paragraph.",
+  attachments: [attachment],
+});
+```
+
+For a reply, also pass the original message's `threadId`, `Message-ID` as
+`inReplyTo`, and complete `References` chain. Do not hand-build `requestBody.raw`
+or retry a failed send through browser automation.
+
 ## Verify mutations
 
 Read the affected resource back through a separate typed method. Preserve IDs,

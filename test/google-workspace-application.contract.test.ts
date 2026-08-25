@@ -59,5 +59,8 @@ test("exports one ready Google application whose requests and members agree", ()
   expect(GOOGLE_WORKSPACE_MEMBER_INDEX).toContainEqual(
     expect.objectContaining({ effect: "write", path: "drive.files.upload" }),
   );
+  expect(GOOGLE_WORKSPACE_MEMBER_INDEX).toContainEqual(
+    expect.objectContaining({ effect: "write", path: "gmail.users.messages.sendEmail" }),
+  );
   expect(GOOGLE_WORKSPACE_REQUESTS.drive.resources.resources.files.methods.list).toBeDefined();
 });

@@ -4517,6 +4517,8 @@ declare namespace GoogleGmail {
           /** Gets the specified message attachment. */
           get(params: UsersMessagesAttachmentsGetParams): Promise<GoogleGmail.MessagePartBody>;
         };
+        /** Compose and send a plain-text email while keeping MIME and base64 out of model code. */
+        sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>;
       };
       settings: {
         /** Gets the auto-forwarding setting for the specified account. For more information, see [Manage email forwarding](https://developers.google.com/workspace/gmail/api/guides/forwarding_settings). */
@@ -16510,6 +16512,24 @@ type DriveDownloadInput = {
   path: string;
   sha256?: string;
 };
+type GmailEmailAddress = string | {
+  email: string;
+  name?: string;
+};
+type GmailSendEmailInput = {
+  attachments?: File[];
+  bcc?: GmailEmailAddress | GmailEmailAddress[];
+  cc?: GmailEmailAddress | GmailEmailAddress[];
+  from: GmailEmailAddress;
+  inReplyTo?: string;
+  references?: string[];
+  replyTo?: GmailEmailAddress;
+  subject: string;
+  text: string;
+  threadId?: string;
+  to: GmailEmailAddress | GmailEmailAddress[];
+  userId?: string;
+};
 type GoogleWorkspaceNamespace = {
   /** Request the employee's Google Workspace grant from Chrome Identity. */
   authorize(): Promise<{
@@ -18018,6 +18038,14 @@ declare const GOOGLE_WORKSPACE_MEMBER_INDEX: readonly [{
   readonly summary: "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).";
   readonly callPrefix: "ctx.applications[\"google-workspace\"].gmail().users.messages.send";
   readonly output: "unknown";
+}, {
+  readonly effect: "write";
+  readonly inputNames: readonly ["attachments", "bcc", "cc", "from", "inReplyTo", "references", "replyTo", "subject", "text", "threadId", "to", "userId"];
+  readonly path: "gmail.users.messages.sendEmail";
+  readonly signature: "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>";
+  readonly summary: "Compose and send a plain-text email with optional native File attachments.";
+  readonly callPrefix: "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail";
+  readonly output: "GoogleGmail.Message";
 }, {
   readonly effect: "write";
   readonly inputNames: readonly ["$.xgafv", "alt", "fields", "id", "prettyPrint", "quotaUser", "userId"];
@@ -33610,6 +33638,14 @@ declare const GOOGLE_WORKSPACE_APPLICATION_FACE: {
     readonly output: "unknown";
   }, {
     readonly effect: "write";
+    readonly inputNames: readonly ["attachments", "bcc", "cc", "from", "inReplyTo", "references", "replyTo", "subject", "text", "threadId", "to", "userId"];
+    readonly path: "gmail.users.messages.sendEmail";
+    readonly signature: "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>";
+    readonly summary: "Compose and send a plain-text email with optional native File attachments.";
+    readonly callPrefix: "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail";
+    readonly output: "GoogleGmail.Message";
+  }, {
+    readonly effect: "write";
     readonly inputNames: readonly ["$.xgafv", "alt", "fields", "id", "prettyPrint", "quotaUser", "userId"];
     readonly path: "gmail.users.messages.trash";
     readonly signature: "ctx.applications[\"google-workspace\"].gmail().users.messages.trash(input: object): Promise<unknown>";
@@ -34466,4 +34502,4 @@ type GoogleServiceDescription = {
 type GoogleWorkspaceServices = Readonly<Record<string, GoogleServiceDescription>>;
 declare function installGoogleWorkspace(target: Record<string, unknown>, transport: GoogleWorkspaceTransport, workspace: GoogleWorkspaceFiles, services?: GoogleWorkspaceServices): GoogleWorkspaceNamespace;
 //#endregion
-export { type ApplicationCard, type ApplicationMember, type CuratedApplicationFace, type DriveDownloadInput, type DriveUploadInput, GOOGLE_WORKSPACE_APPLICATION_CARD, GOOGLE_WORKSPACE_APPLICATION_FACE, GOOGLE_WORKSPACE_APPLICATION_ID, GOOGLE_WORKSPACE_AUTH_REQUIREMENTS, GOOGLE_WORKSPACE_MEMBER_INDEX, GOOGLE_WORKSPACE_REQUESTS, type GoogleCalendar, type GoogleChat, type GoogleDocs, type GoogleDrive, type GoogleGmail, type GooglePeople, type GoogleSheets, type GoogleSlides, GoogleWorkspaceAuthorization, GoogleWorkspaceFiles, type GoogleWorkspaceMember, type GoogleWorkspaceNamespace, GoogleWorkspaceTransport, installGoogleWorkspace };
+export { type ApplicationCard, type ApplicationMember, type CuratedApplicationFace, type DriveDownloadInput, type DriveUploadInput, GOOGLE_WORKSPACE_APPLICATION_CARD, GOOGLE_WORKSPACE_APPLICATION_FACE, GOOGLE_WORKSPACE_APPLICATION_ID, GOOGLE_WORKSPACE_AUTH_REQUIREMENTS, GOOGLE_WORKSPACE_MEMBER_INDEX, GOOGLE_WORKSPACE_REQUESTS, type GmailEmailAddress, type GmailSendEmailInput, type GoogleCalendar, type GoogleChat, type GoogleDocs, type GoogleDrive, type GoogleGmail, type GooglePeople, type GoogleSheets, type GoogleSlides, GoogleWorkspaceAuthorization, GoogleWorkspaceFiles, type GoogleWorkspaceMember, type GoogleWorkspaceNamespace, GoogleWorkspaceTransport, installGoogleWorkspace };

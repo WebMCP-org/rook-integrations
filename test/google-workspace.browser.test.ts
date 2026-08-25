@@ -23,6 +23,24 @@ async function sha256(bytes: Uint8Array): Promise<string> {
     .join("");
 }
 
+function decodeBase64Url(value: string): string {
+  const base64 = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+  return new TextDecoder().decode(
+    Uint8Array.from(atob(padded), (character) => character.charCodeAt(0)),
+  );
+}
+
+function decodeMimeBase64Part(raw: string, header: string): Uint8Array {
+  const headerStart = raw.indexOf(header);
+  if (headerStart < 0) throw new Error(`MIME message is missing ${header}`);
+  const bodyStart = raw.indexOf("\r\n\r\n", headerStart) + 4;
+  const bodyEnd = raw.indexOf("\r\n--", bodyStart);
+  if (bodyStart < 4 || bodyEnd < 0) throw new Error(`MIME part ${header} is malformed`);
+  const encoded = raw.slice(bodyStart, bodyEnd).replaceAll("\r\n", "");
+  return Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
+}
+
 beforeEach(async () => {
   await fetch(`${GOOGLE_WORKSPACE_TEST_BOUNDARY}/reset`);
 });
@@ -140,6 +158,66 @@ test("moves 2.1 MB through native File, Blob, and ReadableStream values", async 
       size: textFile.size,
     },
   });
+});
+
+test("sends the exact multiline email body and native attachments through Gmail", async () => {
+  let requestBody: { raw?: string; threadId?: string } | undefined;
+  globalThis.fetch = async (input, init) => {
+    const providerUrl = new URL(
+      typeof input === "string" || input instanceof URL ? input : input.url,
+      location.href,
+    );
+    if (providerUrl.pathname !== "/gmail/v1/users/me/messages/send") {
+      return browserFetch(input, init);
+    }
+    requestBody = JSON.parse(String(init?.body));
+    return new Response(JSON.stringify({ id: "message-1", threadId: "thread-1" }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const client = installGoogleWorkspace(
+    {},
+    {
+      async __invalidateToken() {},
+      async __token() {
+        return { ok: true, token: GOOGLE_WORKSPACE_TEST_TOKEN };
+      },
+    },
+    {
+      async writeStream() {
+        throw new Error("sending email does not write workspace files");
+      },
+    },
+  );
+  const text = "First line.\n\nSecond paragraph — exact.\n";
+  const attachmentBytes = new Uint8Array([0, 10, 13, 42, 255]);
+  const attachment = new File([attachmentBytes], "evidence.bin", {
+    type: "application/octet-stream",
+  });
+
+  const sent = await client.gmail().users.messages.sendEmail({
+    attachments: [attachment],
+    from: { email: "rook@example.com", name: "Rook" },
+    inReplyTo: "<prior@example.com>",
+    references: ["<root@example.com>", "<prior@example.com>"],
+    subject: "Exact body",
+    text,
+    threadId: "thread-1",
+    to: [{ email: "manager@example.com", name: "Manager" }],
+  });
+
+  expect(sent).toMatchObject({ id: "message-1", threadId: "thread-1" });
+  expect(requestBody?.threadId).toBe("thread-1");
+  expect(requestBody?.raw).toEqual(expect.any(String));
+  const raw = decodeBase64Url(requestBody?.raw ?? "");
+  expect(raw).toContain("In-Reply-To: <prior@example.com>\r\n");
+  expect(raw).toContain("References: <root@example.com> <prior@example.com>\r\n");
+  expect(
+    new TextDecoder().decode(decodeMimeBase64Part(raw, "Content-Type: text/plain; charset=UTF-8")),
+  ).toBe(text);
+  expect(
+    decodeMimeBase64Part(raw, 'Content-Disposition: attachment; filename="evidence.bin"'),
+  ).toEqual(attachmentBytes);
 });
 
 test("builds every Workspace service request from Google's Discovery surface", async () => {

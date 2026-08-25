@@ -1,3 +1,5 @@
+import { Mailbox, createMimeMessage } from "mimetext/browser";
+
 //#region src/google-workspace.generated.ts
 const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
 
@@ -3376,6 +3378,28 @@ const GOOGLE_WORKSPACE_MEMBER_INDEX = [
 		"summary": "Sends the specified message to the recipients in the `To`, `Cc`, and `Bcc` headers. For more information, see [Create and send email messages](https://developers.google.com/workspace/gmail/api/guides/sending).",
 		"callPrefix": "ctx.applications[\"google-workspace\"].gmail().users.messages.send",
 		"output": "unknown"
+	},
+	{
+		"effect": "write",
+		"inputNames": [
+			"attachments",
+			"bcc",
+			"cc",
+			"from",
+			"inReplyTo",
+			"references",
+			"replyTo",
+			"subject",
+			"text",
+			"threadId",
+			"to",
+			"userId"
+		],
+		"path": "gmail.users.messages.sendEmail",
+		"signature": "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail(input: GmailSendEmailInput): Promise<GoogleGmail.Message>",
+		"summary": "Compose and send a plain-text email with optional native File attachments.",
+		"callPrefix": "ctx.applications[\"google-workspace\"].gmail().users.messages.sendEmail",
+		"output": "GoogleGmail.Message"
 	},
 	{
 		"effect": "write",
@@ -18443,7 +18467,9 @@ function installGoogleWorkspace(target, transport, workspace, services = GOOGLE_
 	const NativeHeaders = Headers;
 	const NativeReadableStream = ReadableStream;
 	const NativeTextDecoder = TextDecoder;
+	const NativeTextEncoder = TextEncoder;
 	const NativeURL = URL;
+	const nativeBtoa = btoa;
 	const nativeFetch = fetch;
 	const nativeJsonParse = JSON.parse;
 	const nativeJsonStringify = JSON.stringify;
@@ -18543,7 +18569,57 @@ function installGoogleWorkspace(target, transport, workspace, services = GOOGLE_
 		await accessToken(true);
 		return { authorized: true };
 	} };
-	for (const [name, service] of Object.entries(services)) if (name !== "drive") namespace[name] = () => buildResource(service, service.resources);
+	for (const [name, service] of Object.entries(services)) if (name !== "drive" && name !== "gmail") namespace[name] = () => buildResource(service, service.resources);
+	const gmailService = services.gmail;
+	const gmail = buildResource(gmailService, gmailService.resources);
+	const gmailUsers = gmail.users;
+	const gmailMessages = gmailUsers && typeof gmailUsers === "object" ? gmailUsers.messages : void 0;
+	if (!gmailMessages || typeof gmailMessages !== "object") throw new Error("Gmail messages resource is missing");
+	namespace.gmail = () => gmail;
+	const sendGmailMessage = gmailService.resources.resources.users.resources.messages.methods.send;
+	const textEncoder = new NativeTextEncoder();
+	const mailbox = (address) => typeof address === "string" ? { addr: address } : {
+		addr: address.email,
+		...address.name ? { name: address.name } : {}
+	};
+	const mailboxes = (addresses) => (Array.isArray(addresses) ? addresses : [addresses]).map(mailbox);
+	const base64 = (bytes) => {
+		const chunks = [];
+		for (let offset = 0; offset < bytes.byteLength; offset += 32768) chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + 32768)));
+		return nativeBtoa(chunks.join(""));
+	};
+	const foldedBase64 = (bytes) => base64(bytes).match(/.{1,76}/gu)?.join("\r\n") ?? "";
+	Object.assign(gmailMessages, { async sendEmail(input) {
+		const message = createMimeMessage();
+		message.setSender(mailbox(input.from));
+		message.setRecipients(mailboxes(input.to));
+		if (input.cc) message.setCc(mailboxes(input.cc));
+		if (input.bcc) message.setBcc(mailboxes(input.bcc));
+		if (input.replyTo) message.setHeader("Reply-To", new Mailbox(mailbox(input.replyTo)));
+		message.setSubject(input.subject);
+		if (input.inReplyTo) message.setHeader("In-Reply-To", input.inReplyTo);
+		if (input.references?.length) message.setHeader("References", input.references.join(" "));
+		message.addMessage({
+			contentType: "text/plain",
+			data: foldedBase64(textEncoder.encode(input.text)),
+			encoding: "base64"
+		});
+		for (const attachment of input.attachments ?? []) {
+			if (!(attachment instanceof NativeFile)) throw new Error("gmail.users.messages.sendEmail attachments require native Files");
+			message.addAttachment({
+				contentType: attachment.type || "application/octet-stream",
+				data: foldedBase64(new Uint8Array(await attachment.arrayBuffer())),
+				filename: attachment.name
+			});
+		}
+		return invoke(gmailService, sendGmailMessage, {
+			userId: input.userId ?? "me",
+			requestBody: {
+				raw: message.asEncoded(),
+				...input.threadId ? { threadId: input.threadId } : {}
+			}
+		});
+	} });
 	const driveService = services.drive;
 	const drive = buildResource(driveService, driveService.resources);
 	const driveFiles = drive.files;

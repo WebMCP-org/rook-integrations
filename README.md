@@ -8,6 +8,8 @@ authentication, sandbox lifecycle, workspace storage, and capability routing.
 The first package is `@rook/google-workspace`. It covers Drive, Gmail,
 Calendar, Docs, Sheets, Slides, Chat, and People from pinned Google Discovery
 documents, plus native Drive upload and streamed workspace download helpers.
+Normal Gmail sends use a structured plain-text helper with native attachments,
+so models never construct raw MIME or base64.
 
 ## Use from Rook
 
