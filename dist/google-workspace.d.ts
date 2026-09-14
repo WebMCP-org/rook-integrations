@@ -1,5 +1,5 @@
 //#region src/google-workspace.generated.d.ts
-declare const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
+export declare const GOOGLE_WORKSPACE_APPLICATION_ID = "google-workspace";
 declare namespace GoogleDrive {
   /** Information about the user, the user's Drive, and system capabilities. */
   type About = {
@@ -16574,7 +16574,7 @@ type CuratedApplicationFace = {
 //#endregion
 //#region src/google-workspace.members.generated.d.ts
 type GoogleWorkspaceMember = ApplicationMember;
-declare const GOOGLE_WORKSPACE_MEMBER_INDEX: readonly [{
+export declare const GOOGLE_WORKSPACE_MEMBER_INDEX: readonly [{
   readonly effect: "authorization";
   readonly inputNames: readonly [];
   readonly path: "authorize";
@@ -18857,7 +18857,7 @@ declare const GOOGLE_WORKSPACE_MEMBER_INDEX: readonly [{
 }];
 //#endregion
 //#region src/google-workspace.requests.generated.d.ts
-declare const GOOGLE_WORKSPACE_REQUESTS: {
+export declare const GOOGLE_WORKSPACE_REQUESTS: {
   readonly drive: {
     readonly baseUrl: "https://www.googleapis.com/drive/v3/";
     readonly resources: {
@@ -32153,19 +32153,19 @@ declare const GOOGLE_WORKSPACE_REQUESTS: {
 };
 //#endregion
 //#region src/google-workspace.d.ts
-declare const GOOGLE_WORKSPACE_APPLICATION_CARD: {
+export declare const GOOGLE_WORKSPACE_APPLICATION_CARD: {
   readonly availability: "ready; native files";
   readonly id: "google-workspace";
   readonly name: "Google Workspace";
   readonly summary: "Drive, Gmail, Calendar, Docs, Sheets, Slides, Chat, and People with native Drive transfers.";
 };
-declare const GOOGLE_WORKSPACE_AUTH_REQUIREMENTS: {
+export declare const GOOGLE_WORKSPACE_AUTH_REQUIREMENTS: {
   readonly binding: "google-workspace";
   readonly origins: readonly ["https://www.googleapis.com/"];
   readonly scopes: readonly ["https://mail.google.com/", "https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/chat.messages", "https://www.googleapis.com/auth/chat.spaces", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/contacts.readonly", "https://www.googleapis.com/auth/directory.readonly", "https://www.googleapis.com/auth/userinfo.profile"];
   readonly skillNames: readonly ["google-workspace"];
 };
-declare const GOOGLE_WORKSPACE_APPLICATION_FACE: {
+export declare const GOOGLE_WORKSPACE_APPLICATION_FACE: {
   readonly card: {
     readonly availability: "ready; native files";
     readonly id: "google-workspace";
@@ -34455,7 +34455,7 @@ declare const GOOGLE_WORKSPACE_APPLICATION_FACE: {
   }];
   readonly relatedSkills: readonly ["google-workspace"];
 };
-type GoogleWorkspaceAuthorization = {
+export type GoogleWorkspaceAuthorization = {
   ok: true;
   token: string;
 } | {
@@ -34464,11 +34464,11 @@ type GoogleWorkspaceAuthorization = {
     kind: "authentication_required";
   };
 };
-type GoogleWorkspaceTransport = {
+export type GoogleWorkspaceTransport = {
   __invalidateToken(token: string): Promise<void>;
   __token(interactive: boolean): Promise<GoogleWorkspaceAuthorization>;
 };
-type GoogleWorkspaceFiles = {
+export type GoogleWorkspaceFiles = {
   writeStream(input: {
     expectedSha256?: string;
     path: string;
@@ -34500,6 +34500,6 @@ type GoogleServiceDescription = {
   readonly resources: GoogleResourceDescription;
 };
 type GoogleWorkspaceServices = Readonly<Record<string, GoogleServiceDescription>>;
-declare function installGoogleWorkspace(target: Record<string, unknown>, transport: GoogleWorkspaceTransport, workspace: GoogleWorkspaceFiles, services?: GoogleWorkspaceServices): GoogleWorkspaceNamespace;
+export declare function installGoogleWorkspace(target: Record<string, unknown>, transport: GoogleWorkspaceTransport, workspace: GoogleWorkspaceFiles, services?: GoogleWorkspaceServices): GoogleWorkspaceNamespace;
 //#endregion
-export { type ApplicationCard, type ApplicationMember, type CuratedApplicationFace, type DriveDownloadInput, type DriveUploadInput, GOOGLE_WORKSPACE_APPLICATION_CARD, GOOGLE_WORKSPACE_APPLICATION_FACE, GOOGLE_WORKSPACE_APPLICATION_ID, GOOGLE_WORKSPACE_AUTH_REQUIREMENTS, GOOGLE_WORKSPACE_MEMBER_INDEX, GOOGLE_WORKSPACE_REQUESTS, type GmailEmailAddress, type GmailSendEmailInput, type GoogleCalendar, type GoogleChat, type GoogleDocs, type GoogleDrive, type GoogleGmail, type GooglePeople, type GoogleSheets, type GoogleSlides, GoogleWorkspaceAuthorization, GoogleWorkspaceFiles, type GoogleWorkspaceMember, type GoogleWorkspaceNamespace, GoogleWorkspaceTransport, installGoogleWorkspace };
+export type { ApplicationCard, ApplicationMember, CuratedApplicationFace, DriveDownloadInput, DriveUploadInput, GmailEmailAddress, GmailSendEmailInput, GoogleCalendar, GoogleChat, GoogleDocs, GoogleDrive, GoogleGmail, GooglePeople, GoogleSheets, GoogleSlides, GoogleWorkspaceMember, GoogleWorkspaceNamespace };
