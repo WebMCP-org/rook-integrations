@@ -18434,7 +18434,7 @@ const GOOGLE_WORKSPACE_REQUESTS = {
 
 //#endregion
 //#region src/google-workspace.ts
-const RESPONSE_ERROR_LIMIT_BYTES = 64 * 1024;
+const RESPONSE_ERROR_LIMIT_BYTES = 65536;
 const GOOGLE_WORKSPACE_APPLICATION_CARD = {
 	availability: "ready; native files",
 	id: GOOGLE_WORKSPACE_APPLICATION_ID,
