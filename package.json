@@ -1,6 +1,6 @@
 {
   "name": "@rook/google-workspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-native typed Google Workspace client and model skill for Rook",
   "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
   "bugs": {
