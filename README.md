@@ -83,3 +83,20 @@ such as an installed Script Lab **Code** pane. The Microsoft skill directs
 Rook to open the installed pane with browser controls when native tools are
 absent. Manual pane opening can isolate connection tests. Rook's autonomous
 pane-opening workflow still needs a complete live playthrough.
+
+## Release order
+
+Merge the provider PR first. A published GitHub release runs the provider
+checks and publishes both packages: `@rook/google-workspace` and
+`@rook/microsoft365`. Configure npm trusted publishing for each package with
+this repository, the `release.yml` workflow and the `npm-publish` environment.
+The new Microsoft package needs its own npm publisher configuration.
+
+Before merging Rook, confirm that both package versions can be fetched from
+npm. Update Rook's package versions and lockfile together, then check a fresh
+install with the frozen lockfile and build the extension. Do not merge Rook
+with a dependency version that has not been published.
+
+An immutable GitHub commit pin can support PR review before an npm release.
+The pinned commit must be available on GitHub and must include both packages'
+built files. Do not use a moving branch name as the dependency pin.

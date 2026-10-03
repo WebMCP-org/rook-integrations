@@ -26,6 +26,9 @@
       "import": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp pack",
     "typecheck": "vp exec tsc --noEmit",
