@@ -1,6 +1,6 @@
 {
   "name": "@rook/google-workspace",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser-native typed Google Workspace client and model skill for Rook",
   "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
   "bugs": {
@@ -33,13 +33,13 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "vp check && vp run typecheck && vp run test && vp run validate:package",
+    "check": "vp check && vp run typecheck && vp run test && vp run validate:package && vp run @rook/microsoft365#check",
     "check:generated": "node scripts/generate-google-workspace.mjs --check",
     "generate": "node scripts/generate-google-workspace.mjs",
     "prepublishOnly": "vp run validate:package",
     "test": "vp run test:contract && vp run test:browser",
     "test:browser": "vp exec vitest run --config vitest.browser.config.ts",
-    "test:contract": "vp exec vitest run test/google-workspace-application.contract.test.ts",
+    "test:contract": "vp exec vitest run test/google-workspace-application.contract.test.ts test/document-editing.contract.test.ts test/google-document-workflows.contract.test.ts",
     "typecheck": "vp run check:generated && vp exec tsc --noEmit",
     "validate:package": "vp exec -- node scripts/validate-package.mjs"
   },

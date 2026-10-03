@@ -1,0 +1,50 @@
+{
+  "name": "@rook/microsoft365",
+  "version": "0.1.0",
+  "description": "Native Office document operations for Rook in a document-bound Office.js context",
+  "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
+  "bugs": {
+    "url": "https://github.com/WebMCP-org/rook-integrations/issues"
+  },
+  "license": "FSL-1.1-MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebMCP-org/rook-integrations.git",
+    "directory": "microsoft365"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "src"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "typecheck": "vp exec tsc --noEmit",
+    "test": "vp test run && vp run test:browser",
+    "check": "vp check && vp run typecheck && vp run test && vp run build",
+    "test:browser": "vp test run --config test/vitest.browser.config.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.4"
+  },
+  "devDependencies": {
+    "@types/office-js": "1.0.611",
+    "@vitest/browser-playwright": "4.1.11",
+    "playwright": "1.63.0",
+    "typescript": "6.0.3",
+    "vite-plus": "0.3.1",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  }
+}

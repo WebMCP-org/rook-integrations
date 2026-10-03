@@ -11,6 +11,17 @@ documents, plus native Drive upload and streamed workspace download helpers.
 Normal Gmail sends use a structured plain-text helper with native attachments,
 so models never construct raw MIME or base64.
 
+The independent `microsoft365/` package is `@rook/microsoft365`. It supplies
+native Office.js operations for Excel, Word and PowerPoint in an initialized,
+document-bound add-in. Rook registers those operations on its existing page
+MCP transport. The current editor owns Microsoft authentication; opening an
+installed Script Lab Code pane supplies the document context. This package
+does not implement Graph or a separate login service.
+
+Google native editing examples are combined in one provider reference;
+Microsoft native editing and connection guidance is in one provider skill.
+Their lifecycle matches their clients, rather than the host routing skill.
+
 ## Use from Rook
 
 ```ts
@@ -43,22 +54,32 @@ The test runs the production client in real headless Chromium against a local
 HTTP boundary and proves native `File`, `Blob`, `ReadableStream`, 2.1 MB Drive
 transfer, hashing, cancellation, and atomic workspace publication behavior.
 
-## Develop with Rook locally
+## Develop with Rook
 
-Build after each package change, then temporarily link this checkout into the
-sibling Rook extension package:
+Use Node.js 24.11 or newer. Rook pins both providers to the same immutable
+GitHub commit. The Google package is at the repository root. The Microsoft
+package is in `microsoft365`, selected with pnpm's `path:` parameter.
+The packages contain their built files and skills. A Rook checkout can install
+and build without a local checkout of this repository.
 
-```bash
-vp run build
-vp exec -- pnpm --dir ../think-browser-host/packages/extension link ../../../rook-integrations
-```
-
-Remove the local link when verification is complete; `pnpm unlink` reinstalls
-the immutable commit already saved by Rook:
+From the Rook checkout:
 
 ```bash
-vp exec -- pnpm --dir ../think-browser-host/packages/extension unlink @rook/google-workspace
+vp install --frozen-lockfile
+vp run @rook/extension#build
 ```
 
-Never land the link as integration state. The final Rook change pins the
-reviewed `rook-integrations` commit in its package manifest and lockfile.
+Load `packages/extension/.output/chrome-mv3` through Chrome's **Load unpacked**
+action. After a new build, reload Rook in `chrome://extensions` and refresh the
+document tabs so their content scripts update.
+
+To change a provider, build and check this repository, publish its branch, then
+update both Rook dependency pins to that exact commit and regenerate its
+lockfile. Do not commit local package links.
+
+The extension bundles the providers; no separate provider server runs.
+Microsoft native tools require an initialized document-bound Office add-in,
+such as an installed Script Lab **Code** pane. The Microsoft skill directs
+Rook to open the installed pane with browser controls when native tools are
+absent. Manual pane opening can isolate connection tests. Rook's autonomous
+pane-opening workflow still needs a complete live playthrough.
