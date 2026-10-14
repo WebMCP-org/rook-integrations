@@ -16,6 +16,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      PACKAGE_DIR: ${{ startsWith(github.event.release.tag_name, 'microsoft365-v') && 'microsoft365' || '.' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,9 +38,12 @@ jobs:
       - run: vp exec playwright install --with-deps chromium
       - run: vp run check
       - name: Verify release version
-        run: test "${GITHUB_REF_NAME}" = "v$(node -p 'require("./package.json").version')"
-      - name: Publish Google Workspace package
-        run: npm publish --access public
-      - name: Publish Microsoft 365 package
-        working-directory: microsoft365
-        run: npm publish --access public
+        run: |
+          package_version=$(node -p "require('./${PACKAGE_DIR}/package.json').version")
+          if [ "${PACKAGE_DIR}" = "microsoft365" ]; then
+            test "${GITHUB_REF_NAME}" = "microsoft365-v${package_version}"
+          else
+            test "${GITHUB_REF_NAME}" = "v${package_version}"
+          fi
+      - run: npm publish --access public
+        working-directory: ${{ env.PACKAGE_DIR }}

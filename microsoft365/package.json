@@ -1,7 +1,7 @@
 {
   "name": "@rook/microsoft365",
   "version": "0.1.0",
-  "description": "Native Office document operations for Rook in a document-bound Office.js context",
+  "description": "Office.js authoring skill for Rook's existing Playwright execution context",
   "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
   "bugs": {
     "url": "https://github.com/WebMCP-org/rook-integrations/issues"
@@ -13,36 +13,19 @@
     "directory": "microsoft365"
   },
   "files": [
-    "dist",
-    "skills",
-    "src"
+    "skills"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
-    "typecheck": "vp exec tsc --noEmit",
-    "test": "vp test run && vp run test:browser",
-    "check": "vp check && vp run typecheck && vp run test && vp run build",
-    "test:browser": "vp test run --config test/vitest.browser.config.ts"
-  },
-  "dependencies": {
-    "zod": "4.6.4"
+    "check": "vp check && vp exec vitest run",
+    "prepublishOnly": "vp run check"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/office-js": "1.0.611",
-    "@vitest/browser-playwright": "4.1.11",
-    "playwright": "1.63.0",
     "typescript": "6.0.3",
     "vite-plus": "0.3.1",
     "vitest": "4.1.11"

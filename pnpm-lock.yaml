@@ -38,20 +38,13 @@ importers:
         version: 4.6.4
 
   microsoft365:
-    dependencies:
-      zod:
-        specifier: 4.6.4
-        version: 4.6.4
     devDependencies:
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
       '@types/office-js':
         specifier: 1.0.611
         version: 1.0.611
-      '@vitest/browser-playwright':
-        specifier: 4.1.11
-        version: 4.1.11(@voidzero-dev/vite-plus-core@0.3.1(@types/node@24.13.4)(typescript@6.0.3))(playwright@1.63.0)(vitest@4.1.11)
-      playwright:
-        specifier: 1.63.0
-        version: 1.63.0
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -370,6 +363,11 @@ packages:
   '@oxlint/plugins@1.79.0':
     resolution: {integrity: sha512-S0uyoxakDINJ4DPgqxGlEEvrdSMeQb7Z2lKVjxoY2gwsbZbfg2Xr8Klfeo5ZeraHmmdBCELFUHkSe6KEmBpMvg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@playwright/test@1.63.0':
+    resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -1242,6 +1240,10 @@ snapshots:
     optional: true
 
   '@oxlint/plugins@1.79.0': {}
+
+  '@playwright/test@1.63.0':
+    dependencies:
+      playwright: 1.63.0
 
   '@polka/url@1.0.0-next.29': {}
 
