@@ -1,6 +1,6 @@
 import { defineConfig } from "vite-plus";
 
-const generated = ["discovery/*.json", "dist/**", "src/google-workspace*.generated.ts"];
+const generated = ["discovery/*.json", "**/dist/**", "src/google-workspace*.generated.ts"];
 
 export default defineConfig({
   staged: {
