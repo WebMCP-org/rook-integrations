@@ -1,0 +1,36 @@
+{
+  "name": "@rook/microsoft365",
+  "version": "0.1.0",
+  "description": "Office.js authoring skill for Rook's existing Playwright execution context",
+  "homepage": "https://github.com/WebMCP-org/rook-integrations#readme",
+  "bugs": {
+    "url": "https://github.com/WebMCP-org/rook-integrations/issues"
+  },
+  "license": "FSL-1.1-MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebMCP-org/rook-integrations.git",
+    "directory": "microsoft365"
+  },
+  "files": [
+    "skills"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "vp check && vp exec vitest run",
+    "prepublishOnly": "vp run check"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/office-js": "1.0.611",
+    "typescript": "6.0.3",
+    "vite-plus": "0.3.1",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  }
+}

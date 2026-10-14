@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "vp check && vp run typecheck && vp run test && vp run validate:package",
+    "check": "vp check && vp run typecheck && vp run test && vp run validate:package && vp run @rook/microsoft365#check",
     "check:generated": "node scripts/generate-google-workspace.mjs --check",
     "generate": "node scripts/generate-google-workspace.mjs",
     "prepublishOnly": "vp run validate:package",

@@ -1,0 +1,5 @@
+packages:
+  - .
+  - microsoft365
+minimumReleaseAgeExclude:
+  - "@types/office-js@1.0.611"

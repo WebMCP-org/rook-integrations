@@ -62,3 +62,35 @@ vp exec -- pnpm --dir ../think-browser-host/packages/extension unlink @rook/goog
 
 Never land the link as integration state. The final Rook change pins the
 reviewed `rook-integrations` commit in its package manifest and lockfile.
+
+## Microsoft 365
+
+`@rook/microsoft365` ships an Office.js skill and checked examples. It has no
+runtime client or operation tools. Rook uses its existing tab-bound `execute`
+context to find an initialized Script Lab frame and call the SDK through
+Playwright `frame.evaluate`. The document's Office session supplies access.
+
+The skill covers precise Excel, Word and PowerPoint edits, source preservation,
+independent read-back, readable tables, slide layout and images. Office.js types
+help check code; they do not guarantee that a host supports every API. Check
+requirement sets and inspect the rendered result.
+
+Publish this package with a `microsoft365-v0.1.0` release tag. Google Workspace
+keeps its own `v<version>` release tag. Merge this provider PR first. Then update
+Rook to the reviewed commit or published package before merging its Office PR.
+
+To test both repositories before publication, install dependencies in each
+checkout, then run this command from Rook:
+
+```bash
+vp exec -- pnpm --dir packages/extension link ../../../rook-integrations/microsoft365
+```
+
+Build Rook and load its unpacked extension. Open an Office document and Script
+Lab's Code pane. Ask Rook to edit a small range or text passage. Check both the
+edit and the content that must be preserved. The final Rook manifest and lockfile
+must use an immutable dependency, with the temporary link removed:
+
+```bash
+vp exec -- pnpm --dir packages/extension unlink @rook/microsoft365
+```
