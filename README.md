@@ -94,3 +94,21 @@ must use an immutable dependency, with the temporary link removed:
 ```bash
 vp exec -- pnpm --dir packages/extension unlink @rook/microsoft365
 ```
+
+## Microsoft Graph
+
+`@rook/microsoft-graph` exposes Microsoft's official JavaScript `Client`, upload
+helpers and v1.0 model types. Its installer receives the SDK's standard
+`AuthenticationProvider` from the host and returns the client at
+`applications["microsoft-graph"].client()`. It owns no login flow, token store or
+HTTP transport. The skill covers OneDrive metadata and bytes and Outlook mail.
+
+This package is a provider foundation. Rook still needs a Microsoft OAuth grant,
+application binding and preflight declarations before it can use the package.
+A signed-in Office tab does not supply a Graph OAuth token. Office.js remains
+the path for edits inside an open Excel, Word or PowerPoint document.
+
+The SDK types check client methods. Microsoft's model types check authored
+payloads. The SDK's string paths and `get()` response do not provide endpoint
+or runtime response validation; inspect responses before treating them as
+verified document state. Publish with a `microsoft-graph-v0.1.0` release tag.
