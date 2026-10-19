@@ -64,6 +64,19 @@ Follow each API's `nextPageToken` until absent when the task requires complete
 results. Use `fields`, page size, and narrow queries to keep intermediate
 objects compact.
 
+## Edit Docs, Sheets and Slides in place
+
+For sentence edits, formatting, spreadsheet cells/tabs, slide layout or media,
+read [the native editing guide](references/document-editing.md). It contains
+checked execute examples for exact native scopes, revision controls, field
+masks, style/link preservation and independent read-back. Keep the existing
+file and its collaborative structures as the source. For presentation creation
+or restyling, also use the guide's slide layout, text-fit, crop and full-deck
+visual checks before reporting a finished deck. The guide also covers document
+hierarchy and native tables, advanced formula audits, charts, native table
+controls, scoped cleanup and speaker notes. Choose those checked workflows
+rather than treating a readable export as the full editable document.
+
 ## Move Drive bytes natively
 
 Discovery owns ordinary Drive methods. Two browser-only helpers handle the
@@ -118,3 +131,8 @@ Read the affected resource back through a separate typed method. Preserve IDs,
 URLs, revision identifiers, and compact status fields before a later step can
 fail. Use browser automation only for visible semantics the selected Google
 API genuinely lacks.
+
+## Keep document progress visible
+
+Follow Rook's document-work skill and its `document_work` reporting contract.
+Report the native edit stages and verification checks from this provider.
