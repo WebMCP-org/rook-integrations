@@ -27,7 +27,7 @@ export declare const MICROSOFT_GRAPH_APPLICATION_FACE: {
   };
   readonly members: readonly [{
     readonly callPrefix: "applications[\"microsoft-graph\"]";
-    readonly effect: "read";
+    readonly effect: "write";
     readonly inputNames: readonly [];
     readonly output: "Client";
     readonly path: "client";

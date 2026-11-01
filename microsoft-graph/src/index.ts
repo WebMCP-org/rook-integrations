@@ -42,7 +42,7 @@ export const MICROSOFT_GRAPH_APPLICATION_FACE = {
   members: [
     {
       callPrefix: 'applications["microsoft-graph"]',
-      effect: "read",
+      effect: "write",
       inputNames: [],
       output: "Client",
       path: "client",

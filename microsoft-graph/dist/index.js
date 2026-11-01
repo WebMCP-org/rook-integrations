@@ -27,7 +27,7 @@ const MICROSOFT_GRAPH_APPLICATION_FACE = {
 	card: MICROSOFT_GRAPH_APPLICATION_CARD,
 	members: [{
 		callPrefix: "applications[\"microsoft-graph\"]",
-		effect: "read",
+		effect: "write",
 		inputNames: [],
 		output: "Client",
 		path: "client",
