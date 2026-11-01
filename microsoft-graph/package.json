@@ -1,0 +1,54 @@
+{
+  "name": "@rook/microsoft-graph",
+  "version": "0.1.0",
+  "description": "Official Microsoft Graph JavaScript client, model types and skill for Rook",
+  "license": "FSL-1.1-MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebMCP-org/rook-integrations.git",
+    "directory": "microsoft-graph"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "src"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "typecheck": "vp exec tsc --noEmit",
+    "test:browser": "vp exec vitest run --config vitest.browser.config.ts",
+    "check": "vp check && vp run typecheck && vp run build && vp run test:contract && vp run test:browser",
+    "prepublishOnly": "vp run check",
+    "test:contract": "vp exec vitest run test/examples.test.ts"
+  },
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "3.0.7",
+    "@microsoft/microsoft-graph-types": "2.43.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.4",
+    "@vitest/browser-playwright": "4.1.11",
+    "playwright": "1.63.0",
+    "typescript": "6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.1",
+    "vite-plus": "0.3.1",
+    "vitest": "4.1.11",
+    "zod": "4.6.4"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  }
+}

@@ -17,7 +17,7 @@ jobs:
       contents: read
       id-token: write
     env:
-      PACKAGE_DIR: ${{ startsWith(github.event.release.tag_name, 'microsoft365-v') && 'microsoft365' || '.' }}
+      PACKAGE_DIR: ${{ startsWith(github.event.release.tag_name, 'microsoft-graph-v') && 'microsoft-graph' || startsWith(github.event.release.tag_name, 'microsoft365-v') && 'microsoft365' || '.' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -40,8 +40,8 @@ jobs:
       - name: Verify release version
         run: |
           package_version=$(node -p "require('./${PACKAGE_DIR}/package.json').version")
-          if [ "${PACKAGE_DIR}" = "microsoft365" ]; then
-            test "${GITHUB_REF_NAME}" = "microsoft365-v${package_version}"
+          if [ "${PACKAGE_DIR}" != "." ]; then
+            test "${GITHUB_REF_NAME}" = "${PACKAGE_DIR}-v${package_version}"
           else
             test "${GITHUB_REF_NAME}" = "v${package_version}"
           fi

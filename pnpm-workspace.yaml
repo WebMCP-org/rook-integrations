@@ -1,5 +1,6 @@
 packages:
   - .
   - microsoft365
+  - microsoft-graph
 minimumReleaseAgeExclude:
   - "@types/office-js@1.0.611"

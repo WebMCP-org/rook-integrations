@@ -38,7 +38,8 @@ function check(source: string) {
     .map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"));
 }
 
-describe("checked Office.js skill examples", () => {
+// Each case typechecks against the 8.8 MB Office declarations; CI runners need over 5 s.
+describe("checked Office.js skill examples", { timeout: 60_000 }, () => {
   it("ships six complete examples using the real Office and Playwright declarations", () => {
     expect(examples).toHaveLength(6);
     for (const example of examples) expect(check(example)).toEqual([]);
