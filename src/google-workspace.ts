@@ -212,8 +212,10 @@ export function installGoogleWorkspace(
       if (parameter.required && (value === undefined || value === null || value === "")) {
         throw new Error(`Google Workspace request requires ${name}`);
       }
-      if (value === undefined || value === null) continue;
+      // An absent optional value is still a declared name: a first page passes
+      // `pageToken: undefined`.
       used.add(name);
+      if (value === undefined || value === null) continue;
       if (parameter.location !== "query") continue;
       if (parameter.repeated && Array.isArray(value)) {
         for (const item of value) url.searchParams.append(name, String(item));
