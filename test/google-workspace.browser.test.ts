@@ -314,3 +314,30 @@ test("builds every Workspace service request from Google's Discovery surface", a
     ]),
   );
 });
+
+test("sends a declared optional parameter passed as undefined as absent", async () => {
+  const urls: URL[] = [];
+  globalThis.fetch = async (input) => {
+    urls.push(new URL(typeof input === "string" || input instanceof URL ? input : input.url));
+    return Response.json({ messages: [] });
+  };
+  const client = installGoogleWorkspace(
+    {},
+    {
+      async __invalidateToken() {},
+      async __token() {
+        return { ok: true, token: GOOGLE_WORKSPACE_TEST_TOKEN };
+      },
+    },
+    {
+      async writeStream() {
+        throw new Error("unused");
+      },
+    },
+  );
+  const messages = client.gmail().users.messages;
+  // The first call of a pagination loop has no token yet.
+  await messages.list({ userId: "me", pageToken: undefined });
+  await messages.list({ userId: "me", pageToken: "next" });
+  expect(urls.map((url) => url.searchParams.get("pageToken"))).toEqual([null, "next"]);
+});

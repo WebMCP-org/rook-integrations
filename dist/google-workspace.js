@@ -18536,8 +18536,8 @@ function installGoogleWorkspace(target, transport, workspace, services = GOOGLE_
 			if (used.has(name)) continue;
 			const value = input[name];
 			if (parameter.required && (value === void 0 || value === null || value === "")) throw new Error(`Google Workspace request requires ${name}`);
-			if (value === void 0 || value === null) continue;
 			used.add(name);
+			if (value === void 0 || value === null) continue;
 			if (parameter.location !== "query") continue;
 			if (parameter.repeated && Array.isArray(value)) for (const item of value) url.searchParams.append(name, String(item));
 			else url.searchParams.append(name, String(value));
